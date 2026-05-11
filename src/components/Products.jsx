@@ -29,14 +29,14 @@ export default function Products() {
   });
 
   const loadProducts = async () => {
-    const res = await fetch("http://http://https://inventory-backend-final-1.onrender.com/products");
+    const res = await fetch("https://inventory-backend-final-1.onrender.com/api/products");
     const data = await res.json();
     setProducts(Array.isArray(data) ? data : []);
   };
 
   const loadStats = async () => {
     try {
-      const res = await fetch("http://http://https://inventory-backend-final-1.onrender.com/products/stats");
+      const res = await fetch("https://inventory-backend-final-1.onrender.com/api/products/stats");
       const data = await res.json();
       setStats(data);
     } catch {}
@@ -44,7 +44,7 @@ export default function Products() {
 
   const loadCategories = async () => {
     try {
-      const res = await fetch("http://http://https://inventory-backend-final-1.onrender.com/masters/categories");
+      const res = await fetch("https://inventory-backend-final-1.onrender.com/api/masters/categories");
       const data = await res.json();
 
       setCategories(Array.isArray(data) ? data : []);
@@ -94,7 +94,7 @@ export default function Products() {
 
   const handleAdd = async () => {
     try {
-      const res = await fetch("http://http://https://inventory-backend-final-1.onrender.com/products", {
+      const res = await fetch("https://inventory-backend-final-1.onrender.com/api/products", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -127,7 +127,7 @@ export default function Products() {
     if (!window.confirm("Delete this product?")) return;
 
     try {
-      const res = await fetch(`http://http://https://inventory-backend-final-1.onrender.com/products/${id}`, {
+      const res = await fetch(`https://inventory-backend-final-1.onrender.com/api/products/${id}`, {
         method: "DELETE",
       });
 
@@ -150,7 +150,7 @@ export default function Products() {
   };
 
   const handleDeactivate = async (id) => {
-    await fetch(`http://http://https://inventory-backend-final-1.onrender.com/products/deactivate/${id}`, {
+    await fetch(`https://inventory-backend-final-1.onrender.com/api/products/deactivate/${id}`, {
       method: "PUT",
     });
 
@@ -158,7 +158,7 @@ export default function Products() {
   };
 
   const handleActivate = async (id) => {
-    await fetch(`http://http://https://inventory-backend-final-1.onrender.com/products/activate/${id}`, {
+    await fetch(`https://inventory-backend-final-1.onrender.com/api/products/activate/${id}`, {
       method: "PUT",
     });
 
@@ -174,7 +174,7 @@ export default function Products() {
 
     if (mrp === null) return;
 
-    await fetch(`http://http://https://inventory-backend-final-1.onrender.com/products/approve/${p.id}`, {
+    await fetch(`https://inventory-backend-final-1.onrender.com/api/products/approve/${p.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -197,7 +197,7 @@ export default function Products() {
 
     if (mrp === null) return;
 
-    await fetch(`http://http://https://inventory-backend-final-1.onrender.com/products/price/${p.id}`, {
+    await fetch(`https://inventory-backend-final-1.onrender.com/api/products/price/${p.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -231,7 +231,7 @@ export default function Products() {
   const handleBarcodeResult = async (code) => {
     try {
       const res = await fetch(
-        `http://http://https://inventory-backend-final-1.onrender.com/products/scan/${code}`,
+        `https://inventory-backend-final-1.onrender.com/api/products/scan/${code}`,
       );
 
       const data = await res.json();

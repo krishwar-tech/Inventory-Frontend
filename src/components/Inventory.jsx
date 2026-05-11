@@ -20,7 +20,7 @@ export default function Inventory() {
 
   const loadProducts = async () => {
     try {
-      const res = await axios.get("http://http://https://inventory-backend-final-1.onrender.com/inventory");
+      const res = await axios.get("https://inventory-backend-final-1.onrender.com/api/inventory");
       setProducts(res.data);
     } catch (err) {
       console.log(err);
@@ -30,7 +30,7 @@ export default function Inventory() {
   const loadHistory = async () => {
     try {
       const res = await axios.get(
-        "http://http://https://inventory-backend-final-1.onrender.com/inventory/history",
+        "https://inventory-backend-final-1.onrender.com/api/inventory/history",
       );
       setHistory(res.data);
     } catch (err) {
@@ -88,7 +88,7 @@ export default function Inventory() {
 
     try {
       await axios.post(
-        `http://http://https://inventory-backend-final-1.onrender.com/inventory/damage?productId=${action.productId}&qty=${action.qty}&remarks=${action.remarks}`,
+        `https://inventory-backend-final-1.onrender.com/api/inventory/damage?productId=${action.productId}&qty=${action.qty}&remarks=${action.remarks}`,
       );
 
       alert("Damaged stock updated");
@@ -107,7 +107,7 @@ export default function Inventory() {
 
     try {
       await axios.post(
-        `http://http://https://inventory-backend-final-1.onrender.com/inventory/return?productId=${action.productId}&qty=${action.qty}&remarks=${action.remarks}`,
+        `https://inventory-backend-final-1.onrender.com/api/inventory/return?productId=${action.productId}&qty=${action.qty}&remarks=${action.remarks}`,
       );
 
       alert("Return stock added");
@@ -126,7 +126,7 @@ export default function Inventory() {
 
     try {
       await axios.post(
-        `http://http://https://inventory-backend-final-1.onrender.com/inventory/adjust?productId=${action.productId}&qty=${action.qty}&mode=${action.mode}&remarks=${action.remarks}`,
+        `https://inventory-backend-final-1.onrender.com/api/inventory/adjust?productId=${action.productId}&qty=${action.qty}&mode=${action.mode}&remarks=${action.remarks}`,
       );
 
       alert("Stock adjusted");

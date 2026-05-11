@@ -17,7 +17,7 @@ export default function Billing() {
 
   const scannerRef = useRef(null);
 
-  const API = "http://http://https://inventory-backend-final-1.onrender.com";
+  const API = "https://inventory-backend-final-1.onrender.com/api";
 
   const handleEnter = (e) => {
     if (e.key === "Enter") {  

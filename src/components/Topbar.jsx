@@ -50,7 +50,7 @@ function Topbar() {
 
   const loadLowStock = async () => {
     try {
-      const res = await fetch("http://http://https://inventory-backend-final-1.onrender.com/reports/dashboard");
+      const res = await fetch("https://inventory-backend-final-1.onrender.com/api/reports/dashboard");
       const data = await res.json();
 
       setLowStockCount(data.lowStockCount || 0);
