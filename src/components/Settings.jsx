@@ -9,7 +9,7 @@ function Settings() {
     currencySymbol: "₹",
   });
 
-  const API = "http://https://inventory-backend-final-1.onrender.com/api/settings";
+  const API = "http://http://https://inventory-backend-final-1.onrender.com/settings";
 
   useEffect(() => {
     loadSettings();

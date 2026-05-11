@@ -28,7 +28,7 @@ function Reports() {
 
   const loadReports = async () => {
     try {
-      const res = await fetch("http://https://inventory-backend-final-1.onrender.com/api/reports/dashboard");
+      const res = await fetch("http://http://https://inventory-backend-final-1.onrender.com/reports/dashboard");
 
       const json = await res.json();
 
@@ -55,7 +55,7 @@ function Reports() {
   const previewInvoice = async (saleId) => {
     try {
       const res = await fetch(
-        `http://https://inventory-backend-final-1.onrender.com/api/billing/invoice/${saleId}`,
+        `http://http://https://inventory-backend-final-1.onrender.com/billing/invoice/${saleId}`,
       );
 
       const json = await res.json();
@@ -70,7 +70,7 @@ function Reports() {
   const downloadPdf = async (saleId) => {
     try {
       const res = await fetch(
-        `http://https://inventory-backend-final-1.onrender.com/api/billing/invoice/${saleId}`,
+        `http://http://https://inventory-backend-final-1.onrender.com/billing/invoice/${saleId}`,
       );
 
       const json = await res.json();

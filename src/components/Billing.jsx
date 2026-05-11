@@ -17,10 +17,10 @@ export default function Billing() {
 
   const scannerRef = useRef(null);
 
-  const API = "http://https://inventory-backend-final-1.onrender.com/api";
+  const API = "http://http://https://inventory-backend-final-1.onrender.com";
 
   const handleEnter = (e) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter") {  
       fetchProduct(barcode);
       setBarcode("");
     }

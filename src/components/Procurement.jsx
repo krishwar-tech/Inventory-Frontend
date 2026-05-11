@@ -39,17 +39,17 @@ export default function Procurement() {
   }, []);
 
   const loadProducts = async () => {
-    const res = await axios.get("http://https://inventory-backend-final-1.onrender.com/api/products");
+    const res = await axios.get("http://http://https://inventory-backend-final-1.onrender.com/products");
     setProducts(res.data);
   };
 
   const loadSuppliers = async () => {
-    const res = await axios.get("http://https://inventory-backend-final-1.onrender.com/api/masters/suppliers");
+    const res = await axios.get("http://http://https://inventory-backend-final-1.onrender.com/masters/suppliers");
     setSuppliers(res.data);
   };
 
   const loadLogs = async () => {
-    const res = await axios.get("http://https://inventory-backend-final-1.onrender.com/api/procurement");
+    const res = await axios.get("http://http://https://inventory-backend-final-1.onrender.com/procurement");
     const data = res.data.reverse();
     setLogs(data);
     calculateSummary(data);
@@ -100,7 +100,7 @@ export default function Procurement() {
     }
 
     try {
-      await axios.post("http://https://inventory-backend-final-1.onrender.com/api/procurement", {
+      await axios.post("http://http://https://inventory-backend-final-1.onrender.com/procurement", {
         productId: selectedProduct.id,
 
         supplierId: selectedSupplier.id,
@@ -147,7 +147,7 @@ export default function Procurement() {
 
     try {
       const res = await axios.post(
-        "http://https://inventory-backend-final-1.onrender.com/api/procurement/import-excel",
+        "http://http://https://inventory-backend-final-1.onrender.com/procurement/import-excel",
         fd,
         {
           headers: {
@@ -174,7 +174,7 @@ export default function Procurement() {
     if (!amt) return;
 
     await axios.put(
-      `http://https://inventory-backend-final-1.onrender.com/api/procurement/payment/${id}?amount=${amt}`,
+      `http://http://https://inventory-backend-final-1.onrender.com/procurement/payment/${id}?amount=${amt}`,
     );
 
     loadLogs();
@@ -183,7 +183,7 @@ export default function Procurement() {
   const deleteRow = async (id) => {
     if (!window.confirm("Delete this procurement entry?")) return;
 
-    await axios.delete(`http://https://inventory-backend-final-1.onrender.com/api/procurement/${id}`);
+    await axios.delete(`http://http://https://inventory-backend-final-1.onrender.com/procurement/${id}`);
     loadLogs();
   };
 

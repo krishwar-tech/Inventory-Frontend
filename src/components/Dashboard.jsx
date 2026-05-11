@@ -72,7 +72,7 @@ function Dashboard() {
 
   const loadDashboard = async () => {
     try {
-      const res = await fetch("http://https://inventory-backend-final-1.onrender.com/api/reports/dashboard");
+      const res = await fetch("http://http://https://inventory-backend-final-1.onrender.com/reports/dashboard");
       const data = await res.json();
 
       setStats({

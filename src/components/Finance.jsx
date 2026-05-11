@@ -13,7 +13,7 @@ export default function Finance() {
   const loadFinance = async () => {
     try {
       const res = await axios.get(
-        "http://https://inventory-backend-final-1.onrender.com/api/finance/dashboard",
+        "http://http://https://inventory-backend-final-1.onrender.com/finance/dashboard",
       );
 
       setData(res.data);

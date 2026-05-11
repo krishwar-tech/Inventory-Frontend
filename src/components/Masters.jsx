@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 function Masters() {
-  const API = "http://https://inventory-backend-final-1.onrender.com/api/masters";
+  const API = "http://http://https://inventory-backend-final-1.onrender.com/masters";
 
   const [suppliers, setSuppliers] = useState([]);
   const [categories, setCategories] = useState([]);

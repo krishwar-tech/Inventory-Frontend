@@ -12,7 +12,7 @@ export default function PendingProducts() {
 
   const loadData = async () => {
     try {
-      const res = await axios.get("http://https://inventory-backend-final-1.onrender.com/api/products/pending");
+      const res = await axios.get("http://http://https://inventory-backend-final-1.onrender.com/products/pending");
 
       setRows(Array.isArray(res.data) ? res.data : []);
     } catch (error) {
@@ -37,7 +37,7 @@ export default function PendingProducts() {
     }
 
     try {
-      await axios.put(`http://https://inventory-backend-final-1.onrender.com/api/products/approve/${id}`, {
+      await axios.put(`http://http://https://inventory-backend-final-1.onrender.com/products/approve/${id}`, {
         price: parseFloat(price),
         mrp: parseFloat(mrp),
       });
