@@ -28,7 +28,9 @@ function Reports() {
 
   const loadReports = async () => {
     try {
-      const res = await fetch("https://inventory-backend-final-1.onrender.com/api/reports/dashboard");
+      const res = await fetch(
+        "https://inventory-backend-final-1.onrender.com/api/reports/dashboard"
+      );
 
       const json = await res.json();
 
@@ -55,7 +57,7 @@ function Reports() {
   const previewInvoice = async (saleId) => {
     try {
       const res = await fetch(
-        `https://inventory-backend-final-1.onrender.com/api/billing/invoice/${saleId}`,
+        `https://inventory-backend-final-1.onrender.com/api/billing/invoice/${saleId}`
       );
 
       const json = await res.json();
@@ -70,7 +72,7 @@ function Reports() {
   const downloadPdf = async (saleId) => {
     try {
       const res = await fetch(
-        `https://inventory-backend-final-1.onrender.com/api/billing/invoice/${saleId}`,
+        `https://inventory-backend-final-1.onrender.com/api/billing/invoice/${saleId}`
       );
 
       const json = await res.json();
@@ -135,143 +137,133 @@ function Reports() {
   return (
     <>
       <style>{`
-        .report-tabs{
-          display:flex;
-          gap:12px;
-          flex-wrap:wrap;
-        }
 
-        .table-wrap{
-          width:100%;
-          overflow-x:auto;
-        }
+      .report-page{
+        animation:fadeIn 0.4s ease;
+      }
 
-        @media(max-width:768px){
-
-          .report-page{
-            padding:16px !important;
-          }
-
-          .report-title{
-            font-size:28px !important;
-          }
-
-          .report-sub{
-            font-size:13px !important;
-            line-height:1.5;
-            margin-bottom:18px !important;
-          }
-
-          .report-tabs{
-            flex-direction:column;
-            gap:10px;
-            margin-bottom:18px !important;
-          }
-
-          .report-tabs button{
-            width:100%;
-          }
-
-          .report-cards{
-            grid-template-columns:1fr !important;
-            gap:14px !important;
-            margin-bottom:18px !important;
-          }
-
-          .report-card{
-            padding:18px !important;
-          }
-
-          .report-value{
-            font-size:30px !important;
-          }
-
-          .report-box{
-            padding:16px !important;
-            border-radius:18px !important;
-          }
-
-          .report-box h3{
-            font-size:14px !important;
-            line-height:1.5;
-          }
-
-          .report-table{
-            min-width:820px !important;
-          }
-
-          .report-table th,
-          .report-table td{
-            padding:12px 10px !important;
-            font-size:13px !important;
-            white-space:nowrap;
-          }
-
-          .invoice-modal{
-            width:95% !important;
-            max-width:95% !important;
-            padding:18px !important;
-          }
-        }
-
-        @media(max-width:480px){
-
-          .report-page{
-            padding:12px !important;
-          }
-
-          .report-title{
-            font-size:24px !important;
-          }
-
-          .report-box{
-            padding:14px !important;
-          }
-
-          .report-table{
-            min-width:760px !important;
-          }
-
-          .report-value{
-            font-size:26px !important;
-          }
-        }
-
-        .report-card{
-          transition:all 0.25s ease;
-          position:relative;
-          overflow:hidden;
-          cursor:pointer;
-        }
-
-        .report-card:hover{
-          transform:translateY(-6px) scale(1.02);
-          box-shadow:0 12px 30px rgba(0,0,0,0.08);
-        }
-
-        .report-card::after{
-          content:"";
-          position:absolute;
-          inset:0;
-          background:linear-gradient(120deg,transparent,rgba(59,130,246,0.15));
+      @keyframes fadeIn{
+        from{
           opacity:0;
-          transition:0.3s;
+          transform:translateY(10px);
+        }
+        to{
+          opacity:1;
+          transform:translateY(0);
+        }
+      }
+
+      .report-tabs{
+        display:flex;
+        gap:14px;
+        flex-wrap:wrap;
+        margin-bottom:32px;
+      }
+
+      .table-wrap{
+        width:100%;
+        overflow-x:auto;
+      }
+
+      .report-card{
+        transition:all 0.35s ease;
+        position:relative;
+        overflow:hidden;
+        cursor:pointer;
+      }
+
+      .report-card:hover{
+        transform:translateY(-8px) scale(1.02);
+        box-shadow:0 18px 40px rgba(0,0,0,0.12);
+      }
+
+      .report-box{
+        transition:0.3s ease;
+      }
+
+      .report-box:hover{
+        box-shadow:0 14px 40px rgba(0,0,0,0.08);
+      }
+
+      .report-table tbody tr{
+        transition:0.25s ease;
+      }
+
+      .report-table tbody tr:hover{
+        background:rgba(59,130,246,0.05);
+      }
+
+      .report-table th{
+        position:sticky;
+        top:0;
+        background:var(--surface);
+        z-index:2;
+      }
+
+      .report-tabs button{
+        transition:0.25s ease;
+        font-weight:700;
+      }
+
+      .report-tabs button:hover{
+        transform:translateY(-2px);
+      }
+
+      .report-value{
+        letter-spacing:-1px;
+      }
+
+      .view-btn-hover:hover{
+        transform:scale(1.08);
+      }
+
+      .download-btn-hover:hover{
+        transform:scale(1.08);
+      }
+
+      @media(max-width:768px){
+
+        .report-page{
+          padding:16px !important;
         }
 
-        .report-card:hover::after{
-          opacity:1;
+        .report-tabs{
+          flex-direction:column;
         }
+
+        .report-tabs button{
+          width:100%;
+        }
+
+        .report-cards{
+          grid-template-columns:1fr !important;
+        }
+
+        .report-table{
+          min-width:850px !important;
+        }
+
+        .report-value{
+          font-size:30px !important;
+        }
+
+        .invoice-modal{
+          width:95% !important;
+          max-width:95% !important;
+        }
+      }
+
       `}</style>
 
       <div style={styles.page} className="report-page">
         <div className="page-header">
           <h1 className="page-title">Reports</h1>
+
           <p className="page-subtitle">
             Derived from transaction history — Sales, Purchases and Low Stock
           </p>
         </div>
 
-        {/* Tabs */}
         <div style={styles.tabs} className="report-tabs">
           <button
             style={tab === "sales" ? styles.activeTab : styles.tab}
@@ -295,47 +287,56 @@ function Reports() {
           </button>
         </div>
 
-        {/* SALES */}
         {tab === "sales" && (
           <>
             <div style={styles.cards} className="report-cards">
+
               <Card
                 title="Total Revenue"
                 value={money(data.totalRevenue)}
                 type="green"
               />
 
-              <Card title="Units Sold" value={data.unitsSold} type="blue" />
+              <Card
+                title="Units Sold"
+                value={data.unitsSold}
+                type="blue"
+              />
 
               <Card
                 title="Transactions"
                 value={data.transactions}
                 type="orange"
               />
+
             </div>
 
             <div style={styles.box} className="report-box">
-              <h3 style={styles.boxTitle}>SALES TRANSACTIONS</h3>
+
+              <h3 style={styles.boxTitle}>
+                SALES TRANSACTIONS
+              </h3>
 
               <div className="table-wrap">
+
                 <table style={styles.table} className="report-table">
+
                   <thead>
                     <tr>
                       <th style={styles.th}>BILL NO</th>
-
                       <th style={styles.th}>PAYMENT</th>
-
                       <th style={styles.th}>TOTAL</th>
-
                       <th style={styles.th}>DATE</th>
-
                       <th style={styles.th}>ACTION</th>
                     </tr>
                   </thead>
 
                   <tbody>
+
                     {data.salesRows.map((item, i) => (
+
                       <tr key={i}>
+
                         <td style={styles.td}>{item.billNo}</td>
 
                         <td style={styles.td}>{item.paymentMode}</td>
@@ -355,13 +356,16 @@ function Reports() {
                         </td>
 
                         <td style={styles.td}>
+
                           <div
                             style={{
                               display: "flex",
                               gap: "8px",
                             }}
                           >
+
                             <button
+                              className="view-btn-hover"
                               style={styles.viewBtn}
                               onClick={() => previewInvoice(item.id)}
                             >
@@ -369,26 +373,35 @@ function Reports() {
                             </button>
 
                             <button
+                              className="download-btn-hover"
                               style={styles.downloadBtn}
                               onClick={() => downloadPdf(item.id)}
                             >
                               ⬇
                             </button>
+
                           </div>
+
                         </td>
+
                       </tr>
+
                     ))}
+
                   </tbody>
+
                 </table>
+
               </div>
+
             </div>
           </>
         )}
 
-        {/* PURCHASE */}
         {tab === "purchase" && (
           <>
             <div style={styles.cards} className="report-cards">
+
               <Card
                 title="Total Procurement Cost"
                 value={money(data.totalPurchase)}
@@ -406,13 +419,19 @@ function Reports() {
                 value={data.purchaseRows.length}
                 type="orange"
               />
+
             </div>
 
             <div style={styles.box} className="report-box">
-              <h3 style={styles.boxTitle}>PURCHASE TRANSACTIONS</h3>
+
+              <h3 style={styles.boxTitle}>
+                PURCHASE TRANSACTIONS
+              </h3>
 
               <div className="table-wrap">
+
                 <table style={styles.table} className="report-table">
+
                   <thead>
                     <tr>
                       <th style={styles.th}>PRODUCT</th>
@@ -425,37 +444,44 @@ function Reports() {
                   </thead>
 
                   <tbody>
+
                     {data.purchaseRows.map((item, i) => (
+
                       <tr key={i}>
+
                         <td style={styles.td}>{item.productName}</td>
-
                         <td style={styles.td}>{item.supplier}</td>
-
                         <td style={styles.td}>{item.qty}</td>
-
                         <td style={styles.td}>{money(item.costPrice)}</td>
-
                         <td style={styles.td}>{money(item.totalCost)}</td>
-
                         <td style={styles.td}>{item.date}</td>
+
                       </tr>
+
                     ))}
+
                   </tbody>
+
                 </table>
+
               </div>
+
             </div>
           </>
         )}
 
-        {/* LOW */}
         {tab === "low" && (
+
           <div style={styles.box} className="report-box">
+
             <h3 style={styles.boxTitle}>
-              🔴 LOW STOCK REPORT —{data.lowStockCount} PRODUCTS NEED ATTENTION
+              🔴 LOW STOCK REPORT — {data.lowStockCount} PRODUCTS NEED ATTENTION
             </h3>
 
             <div className="table-wrap">
+
               <table style={styles.table} className="report-table">
+
                 <thead>
                   <tr>
                     <th style={styles.th}>PRODUCT</th>
@@ -467,8 +493,11 @@ function Reports() {
                 </thead>
 
                 <tbody>
+
                   {data.lowStock.map((item, i) => (
+
                     <tr key={i}>
+
                       <td style={styles.td}>{item.name}</td>
 
                       <td style={styles.td}>{item.sku}</td>
@@ -483,9 +512,12 @@ function Reports() {
                         {item.stock}
                       </td>
 
-                      <td style={styles.td}>{item.reorderLevel}</td>
+                      <td style={styles.td}>
+                        {item.reorderLevel}
+                      </td>
 
                       <td style={styles.td}>
+
                         <span
                           style={
                             item.status === "CRITICAL"
@@ -495,23 +527,36 @@ function Reports() {
                         >
                           {item.status}
                         </span>
+
                       </td>
+
                     </tr>
+
                   ))}
+
                 </tbody>
+
               </table>
+
             </div>
+
           </div>
+
         )}
 
-        {/* MODAL */}
         {showInvoice && invoice && (
-          <div style={styles.overlay} onClick={() => setShowInvoice(false)}>
+
+          <div
+            style={styles.overlay}
+            onClick={() => setShowInvoice(false)}
+          >
+
             <div
               style={styles.modal}
               className="invoice-modal"
               onClick={(e) => e.stopPropagation()}
             >
+
               <h2>StockFlow Invoice</h2>
 
               <p>
@@ -519,7 +564,8 @@ function Reports() {
               </p>
 
               <p>
-                <b>Date:</b> {invoice.sale.createdAt.replace("T", " ")}
+                <b>Date:</b>{" "}
+                {invoice.sale.createdAt.replace("T", " ")}
               </p>
 
               <p>
@@ -529,18 +575,24 @@ function Reports() {
               <hr />
 
               {invoice.items.map((item, i) => (
+
                 <div key={i} style={styles.row}>
+
                   <span>
                     {item.productName} x {item.qty}
                   </span>
 
                   <span>{money(item.total)}</span>
+
                 </div>
+
               ))}
 
               <hr />
 
-              <h3>Total: {money(invoice.sale.totalAmount)}</h3>
+              <h3>
+                Total: {money(invoice.sale.totalAmount)}
+              </h3>
 
               <button
                 style={styles.closeBtn}
@@ -548,14 +600,19 @@ function Reports() {
               >
                 Close
               </button>
+
             </div>
+
           </div>
+
         )}
       </div>
     </>
   );
 }
+
 function Card({ title, value, type }) {
+
   const getColor = () => {
     if (type === "green") return "#16a34a";
     if (type === "red") return "#dc2626";
@@ -564,9 +621,61 @@ function Card({ title, value, type }) {
     return "var(--text)";
   };
 
+  const getIcon = () => {
+    if (type === "green") return "📈";
+    if (type === "red") return "💰";
+    if (type === "blue") return "📦";
+    if (type === "orange") return "🧾";
+    return "📊";
+  };
+
   return (
-    <div style={styles.card} className="report-card">
-      <p style={styles.cardTitle}>{title}</p>
+
+    <div
+      style={styles.card}
+      className="report-card"
+    >
+
+      <div
+        style={{
+          position: "absolute",
+          width: "140px",
+          height: "140px",
+          borderRadius: "50%",
+          top: "-45px",
+          right: "-45px",
+          background: "rgba(148,163,184,0.08)",
+        }}
+      />
+
+      <div
+        style={{
+          position: "absolute",
+          width: "75px",
+          height: "75px",
+          borderRadius: "50%",
+          top: "18px",
+          right: "18px",
+          background: "rgba(255,255,255,0.12)",
+          backdropFilter: "blur(8px)",
+        }}
+      />
+
+      <div
+        style={{
+          position: "absolute",
+          top: "22px",
+          right: "26px",
+          fontSize: "24px",
+          opacity: "0.8",
+        }}
+      >
+        {getIcon()}
+      </div>
+
+      <p style={styles.cardTitle}>
+        {title}
+      </p>
 
       <h2
         style={{
@@ -577,26 +686,36 @@ function Card({ title, value, type }) {
       >
         {value}
       </h2>
+
+      <div
+        style={{
+          marginTop: "14px",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "6px",
+          padding: "6px 12px",
+          borderRadius: "999px",
+          fontSize: "12px",
+          fontWeight: "700",
+          background: "rgba(34,197,94,0.12)",
+          color: "#16a34a",
+        }}
+      >
+        ↑ 12% This Week
+      </div>
+
     </div>
+
   );
 }
 
 const styles = {
+
   page: {
     padding: "30px",
     background: "var(--bg)",
     minHeight: "100vh",
     color: "var(--text)",
-  },
-
-  title: {
-    fontSize: "42px",
-    fontWeight: "800",
-  },
-
-  sub: {
-    color: "var(--muted)",
-    marginBottom: "25px",
   },
 
   tabs: {
@@ -608,20 +727,22 @@ const styles = {
 
   tab: {
     padding: "12px 22px",
-    borderRadius: "12px",
+    borderRadius: "14px",
     border: "1px solid var(--border)",
     background: "var(--surface)",
     color: "var(--text)",
     cursor: "pointer",
+    fontWeight: "700",
   },
 
   activeTab: {
     padding: "12px 22px",
-    borderRadius: "12px",
+    borderRadius: "14px",
     border: "none",
     background: "#166534",
     color: "#fff",
     cursor: "pointer",
+    fontWeight: "700",
   },
 
   cards: {
@@ -634,13 +755,19 @@ const styles = {
   card: {
     background: "var(--surface)",
     border: "1px solid var(--border)",
-    borderRadius: "22px",
+    borderRadius: "24px",
     padding: "28px",
+    position: "relative",
+    overflow: "hidden",
+    transition: "all 0.3s ease",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.05)",
+    backdropFilter: "blur(10px)",
   },
 
   cardTitle: {
     color: "var(--muted)",
     fontSize: "15px",
+    fontWeight: "600",
   },
 
   cardValue: {
@@ -661,6 +788,7 @@ const styles = {
     marginBottom: "24px",
     fontSize: "16px",
     letterSpacing: "1px",
+    fontWeight: "800",
   },
 
   table: {
@@ -685,36 +813,42 @@ const styles = {
     border: "none",
     background: "#2563eb",
     color: "#fff",
-    padding: "8px 12px",
-    borderRadius: "8px",
+    padding: "10px 14px",
+    borderRadius: "10px",
     cursor: "pointer",
+    transition: "0.25s ease",
+    boxShadow: "0 4px 12px rgba(37,99,235,0.25)",
   },
 
   downloadBtn: {
     border: "none",
     background: "#16a34a",
     color: "#fff",
-    padding: "8px 12px",
-    borderRadius: "8px",
+    padding: "10px 14px",
+    borderRadius: "10px",
     cursor: "pointer",
+    transition: "0.25s ease",
+    boxShadow: "0 4px 12px rgba(22,163,74,0.25)",
   },
 
   badgeOrange: {
-    background: "#92400e",
-    color: "#fde68a",
-    padding: "8px 14px",
+    background: "linear-gradient(135deg,#f59e0b,#b45309)",
+    color: "#fff",
+    padding: "8px 16px",
     borderRadius: "999px",
-    fontSize: "13px",
+    fontSize: "12px",
     fontWeight: "700",
+    boxShadow: "0 4px 12px rgba(245,158,11,0.25)",
   },
 
   badgeRed: {
-    background: "#991b1b",
-    color: "#fecaca",
-    padding: "8px 14px",
+    background: "linear-gradient(135deg,#ef4444,#991b1b)",
+    color: "#fff",
+    padding: "8px 16px",
     borderRadius: "999px",
-    fontSize: "13px",
+    fontSize: "12px",
     fontWeight: "700",
+    boxShadow: "0 4px 12px rgba(239,68,68,0.25)",
   },
 
   overlay: {

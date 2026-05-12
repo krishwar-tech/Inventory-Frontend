@@ -39,17 +39,23 @@ export default function Procurement() {
   }, []);
 
   const loadProducts = async () => {
-    const res = await axios.get("https://inventory-backend-final-1.onrender.com/api/products");
+    const res = await axios.get(
+      "https://inventory-backend-final-1.onrender.com/api/products",
+    );
     setProducts(res.data);
   };
 
   const loadSuppliers = async () => {
-    const res = await axios.get("https://inventory-backend-final-1.onrender.com/api/masters/suppliers");
+    const res = await axios.get(
+      "https://inventory-backend-final-1.onrender.com/api/masters/suppliers",
+    );
     setSuppliers(res.data);
   };
 
   const loadLogs = async () => {
-    const res = await axios.get("https://inventory-backend-final-1.onrender.com/api/procurement");
+    const res = await axios.get(
+      "https://inventory-backend-final-1.onrender.com/api/procurement",
+    );
     const data = res.data.reverse();
     setLogs(data);
     calculateSummary(data);
@@ -100,15 +106,18 @@ export default function Procurement() {
     }
 
     try {
-      await axios.post("https://inventory-backend-final-1.onrender.com/api/procurement", {
-        productId: selectedProduct.id,
+      await axios.post(
+        "https://inventory-backend-final-1.onrender.com/api/procurement",
+        {
+          productId: selectedProduct.id,
 
-        supplierId: selectedSupplier.id,
+          supplierId: selectedSupplier.id,
 
-        qty: parseInt(form.qty),
+          qty: parseInt(form.qty),
 
-        costPrice: parseFloat(form.costPrice),
-      });
+          costPrice: parseFloat(form.costPrice),
+        },
+      );
 
       resetForm();
 
@@ -183,7 +192,9 @@ export default function Procurement() {
   const deleteRow = async (id) => {
     if (!window.confirm("Delete this procurement entry?")) return;
 
-    await axios.delete(`https://inventory-backend-final-1.onrender.com/api/procurement/${id}`);
+    await axios.delete(
+      `https://inventory-backend-final-1.onrender.com/api/procurement/${id}`,
+    );
     loadLogs();
   };
 
@@ -206,196 +217,573 @@ export default function Procurement() {
   return (
     <>
       <style>{`
-        .proc-page{
-          padding:24px;
-          background:var(--bg);
-          min-height:100vh;
-          color:var(--text);
-        }
+            .proc-page{
+        padding:20px;
+        background:var(--bg);
+        min-height:100vh;
+        color:var(--text);
+      }
 
-        .proc-page h1{
-          font-size:30px;
-          font-weight:800;
-          margin-bottom:6px;
-        }
+      .page-header{
+        margin-bottom:22px;
+      }
 
-        .proc-page p{
-          color:var(--muted);
-          font-size:14px;
-          margin-bottom:20px;
-        }
+      .page-title{
+        font-size:28px;
+        font-weight:800;
+        margin-bottom:5px;
+      }
 
-        .card{
-          background:var(--surface);
-          border:1px solid var(--border);
-          border-radius:22px;
-          padding:24px;
-          margin-bottom:20px;
-        }
+      .page-subtitle{
+        color:var(--muted);
+        font-size:13px;
+      }
 
-        .small-title{
-          font-size:14px;
-          font-weight:800;
-          color:var(--muted);
-          margin-bottom:18px;
-        }
+      .card{
+        background:var(--surface);
 
-        .grid4{
-          display:grid;
-          grid-template-columns:repeat(4,1fr);
-          gap:16px;
-        }
+        border:1px solid var(--border);
 
-        .grid3{
-          display:grid;
-          grid-template-columns:repeat(3,1fr);
-          gap:16px;
-        }
+        border-radius:18px;
 
-        .grid2{
-          display:grid;
-          grid-template-columns:repeat(2,1fr);
-          gap:16px;
-        }
+        padding:18px;
 
-        .summary-grid{
-            display:grid;
-            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-            gap:18px;
-            margin-bottom:24px;
-          }
+        margin-bottom:18px;
 
-          .sum-card{
-            position:relative;
-            padding:20px;
-            border-radius:20px;
-            background:linear-gradient(145deg,var(--surface),#ffffff05);
-            border:1px solid var(--border);
-            transition:all .25s ease;
-            overflow:hidden;
-            cursor:pointer;
-          }
+        transition:.25s ease;
+      }
 
-          .sum-card::before{
-            content:"";
-            position:absolute;
-            inset:0;
-            background:linear-gradient(
-              120deg,
-              transparent,
-              rgba(255,255,255,0.08),
-              transparent
-            );
-            opacity:0;
-            transition:.3s;
-          }
+      .card:hover{
+        border-color:#1f2937;
+      }
 
-          .sum-card:hover{
-            transform:translateY(-6px) scale(1.02);
-            box-shadow:0 14px 35px rgba(0,0,0,0.25);
-            border-color:#16a34a;
-          }
+      .small-title{
+        font-size:14px;
+        font-weight:800;
+        color:var(--muted);
+        margin-bottom:16px;
 
-          .sum-card:hover::before{
-            opacity:1;
-          }
+        display:flex;
+        align-items:center;
+        gap:8px;
+      }
 
-          .sum-card h4{
-            margin:0 0 6px;
-            font-size:13px;
-            color:var(--muted);
-          }
+      /* SUMMARY */
 
-          .sum-card h2{
-            margin:0;
-            font-size:30px;
-            font-weight:800;
-          }
+      .summary-grid{
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+        gap:16px;
+        margin-bottom:22px;
+      }
 
-          .card-blue h2{ color:#3b82f6; }
-          .card-green h2{ color:#16a34a; }
-          .card-orange h2{ color:#f59e0b; }
-          .card-red h2{ color:#dc2626; }
-        label{
-          display:block;
-          font-size:13px;
-          font-weight:700;
-          margin-bottom:8px;
-          color:var(--muted);
-        }
+      .sum-card{
 
-        input,select{
-          width:100%;
-          height:46px;
-          border:1px solid var(--border);
-          background:var(--bg);
-          color:var(--text);
-          border-radius:12px;
-          padding:0 14px;
-          box-sizing:border-box;
-        }
+  position:relative;
 
-        .btn{
-          border:none;
-          padding:12px 18px;
-          border-radius:12px;
-          font-weight:800;
-          cursor:pointer;
-        }
+  overflow:hidden;
 
-        .green{background:#15803d;color:#fff;}
-        .blue{background:#2563eb;color:#fff;}
-        .red{background:#dc2626;color:#fff;}
+  padding:22px;
 
-        .table-wrap{
-          overflow:auto;
-        }
+  border-radius:24px;
 
-        table{
-          width:100%;
-          min-width:1200px;
-          border-collapse:collapse;
-        }
+  background:#ffffff;
 
-        th,td{
-          padding:14px 8px;
-          border-bottom:1px solid var(--border);
-          text-align:left;
-          font-size:14px;
-        }
+  border:1px solid #e5e7eb;
 
-        .badge{
-          padding:6px 10px;
-          border-radius:20px;
-          color:#fff;
-          font-size:12px;
-          font-weight:700;
-          display:inline-block;
-        }
+  transition:.25s ease;
 
+  cursor:pointer;
+
+  box-shadow:0 4px 14px rgba(0,0,0,.05);
+}
+
+/* LIGHT MODE DESIGN */
+
+.sum-card::before{
+  content:"";
+
+  position:absolute;
+
+  width:150px;
+  height:150px;
+
+  border-radius:50%;
+
+  background:rgba(37,99,235,.05);
+
+  top:-55px;
+  right:-45px;
+}
+
+.sum-card::after{
+  content:"";
+
+  position:absolute;
+
+  width:70px;
+  height:70px;
+
+  border-radius:50%;
+
+  background:rgba(255,255,255,.85);
+
+  top:20px;
+  right:20px;
+
+  filter:blur(10px);
+}
+
+.sum-card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 16px 32px rgba(0,0,0,.08);
+}
+
+.sum-card h4{
+
+  margin:0 0 10px;
+
+  font-size:14px;
+
+  font-weight:700;
+
+  color:#64748b;
+
+  position:relative;
+
+  z-index:2;
+}
+
+.sum-card h2{
+
+  margin:0;
+
+  font-size:42px;
+
+  font-weight:800;
+
+  position:relative;
+
+  z-index:2;
+}
+
+/* COLORS */
+
+.card-blue h2{
+  color:#2563eb;
+}
+
+.card-green h2{
+  color:#16a34a;
+}
+
+.card-orange h2{
+  color:#f59e0b;
+}
+
+.card-red h2{
+  color:#ef4444;
+}
+
+/* DARK MODE */
+
+.dark-theme .sum-card{
+
+  background:
+  linear-gradient(
+    145deg,
+    #1e293b,
+    #0f172a
+  );
+
+  border:1px solid rgba(255,255,255,.06);
+
+  box-shadow:none;
+}
+
+.dark-theme .sum-card::before{
+  background:rgba(255,255,255,.04);
+}
+
+.dark-theme .sum-card::after{
+  background:rgba(255,255,255,.03);
+}
+
+.dark-theme .sum-card h4{
+  color:#94a3b8;
+}
+
+      .card-blue h2{color:#3b82f6;}
+      .card-green h2{color:#22c55e;}
+      .card-orange h2{color:#f59e0b;}
+      .card-red h2{color:#ef4444;}
+
+      /* GRID */
+
+      .grid4{
+        display:grid;
+        grid-template-columns:repeat(4,1fr);
+        gap:16px;
+      }
+
+      .grid3{
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:16px;
+      }
+
+      .grid2{
+        display:grid;
+        grid-template-columns:repeat(2,1fr);
+        gap:16px;
+      }
+
+      /* FORM */
+
+      label{
+        display:block;
+        font-size:13px;
+        font-weight:700;
+        margin-bottom:8px;
+        color:var(--muted);
+      }
+
+      input,
+      select{
+        width:100%;
+
+        height:46px;
+
+        border:1px solid var(--border);
+
+        background:var(--bg);
+
+        color:var(--text);
+
+        border-radius:14px;
+
+        padding:0 14px;
+
+        box-sizing:border-box;
+
+        outline:none;
+
+        transition:.2s ease;
+      }
+
+      input:focus,
+      select:focus{
+        border-color:#22c55e;
+
+        box-shadow:0 0 0 3px rgba(34,197,94,.10);
+      }
+
+      /* BUTTONS */
+
+      .btn{
+        border:none;
+
+        height:42px;
+
+        min-width:90px;
+
+        padding:0 18px;
+
+        border-radius:12px;
+
+        font-size:13px;
+
+        font-weight:700;
+
+        cursor:pointer;
+
+        transition:.2s ease;
+      }
+
+      .btn:hover{
+        transform:translateY(-1px);
+      }
+
+      .green{
+        background:#15803d;
+        color:#fff;
+      }
+
+      .blue{
+        background:#2563eb;
+        color:#fff;
+      }
+
+      .red{
+        background:#dc2626;
+        color:#fff;
+      }
+
+      /* IMPORT */
+
+      .import-sub{
+        font-size:12px;
+        color:var(--muted);
+        margin-bottom:14px;
+      }
+
+      /* FILTER */
+
+      .filter-wrap{
+        position:relative;
+      }
+
+      .filter-icon{
+        position:absolute;
+        left:14px;
+        top:50%;
+        transform:translateY(-50%);
+        color:var(--muted);
+        font-size:13px;
+      }
+
+      .filter-input{
+        padding-left:38px !important;
+      }
+
+      /* TABLE */
+
+      .table-wrap{
+        overflow:auto;
+        border-radius:14px;
+      }
+
+      table{
+        width:100%;
+        min-width:1200px;
+        border-collapse:separate;
+        border-spacing:0;
+      }
+
+      thead{
+        position:sticky;
+        top:0;
+        z-index:10;
+      }
+
+      th{
+        padding:14px 10px;
+
+        text-align:left;
+
+        font-size:13px;
+
+        font-weight:800;
+
+        color:var(--muted);
+
+        background:var(--surface);
+
+        border-bottom:1px solid var(--border);
+      }
+
+      td{
+        padding:16px 10px;
+
+        border-bottom:1px solid var(--border);
+
+        font-size:14px;
+      }
+
+      tbody tr{
+        transition:.2s ease;
+      }
+
+      tbody tr:hover{
+        background:rgba(255,255,255,.03);
+      }
+
+      /* BADGES */
+
+      .badge{
+        padding:5px 10px;
+
+        border-radius:999px;
+
+        color:#fff;
+
+        font-size:11px;
+
+        font-weight:700;
+
+        display:inline-flex;
+
+        align-items:center;
+        justify-content:center;
+
+        min-width:74px;
+      }
         .action-row{
           display:flex;
-          gap:8px;
+          align-items:center;
+          gap:10px;
           flex-wrap:wrap;
         }
 
-        @media(max-width:900px){
-          .grid4,.grid3,.grid2{
-            grid-template-columns:1fr;
-          }
+        
 
-          .proc-page{
-            padding:14px;
-          }
+        .action-btn{
 
-          .card{
-            padding:16px;
-          }
+          border:none;
 
-          .btn{
-            width:100%;
-          }
+          height:34px;
+
+          min-width:72px;
+
+          padding:0 14px;
+
+          border-radius:10px;
+
+          font-size:12px;
+
+          font-weight:700;
+
+          cursor:pointer;
+
+          transition:.22s ease;
+
+          display:flex;
+          align-items:center;
+          justify-content:center;
+
+          color:#fff;
         }
+
+        /* PAY BUTTON */
+
+        .pay-btn{
+
+          background:linear-gradient(
+            135deg,
+            #3b82f6,
+            #2563eb
+          );
+
+          box-shadow:0 6px 14px rgba(37,99,235,.18);
+        }
+
+        .pay-btn:hover{
+
+          transform:translateY(-2px);
+
+          box-shadow:0 10px 18px rgba(37,99,235,.28);
+        }
+
+        /* DELETE BUTTON */
+
+        .delete-btn{
+
+          background:linear-gradient(
+            135deg,
+            #ef4444,
+            #dc2626
+          );
+
+          box-shadow:0 6px 14px rgba(239,68,68,.18);
+        }
+
+        .delete-btn:hover{
+
+          transform:translateY(-2px);
+
+          box-shadow:0 10px 18px rgba(239,68,68,.28);
+        }
+      /* DARK MODE */
+
+      .dark-theme .card{
+        background:#162033;
+      }
+
+      .dark-theme input,
+      .dark-theme select{
+        background:#091224;
+        border-color:#1f2937;
+      }
+
+      .dark-theme table th{
+        background:#162033;
+      }
+
+      .delete-btn{
+
+        background:linear-gradient(
+          135deg,
+          #ef4444,
+          #dc2626
+        );
+
+        color:#fff;
+
+        box-shadow:0 6px 14px rgba(239,68,68,.18);
+      }
+
+      .delete-btn:hover{
+        transform:translateY(-2px);
+        box-shadow:0 10px 18px rgba(239,68,68,.28);
+      }
+
+      /* MOBILE */
+
+      @media(max-width:1000px){
+
+        .grid4{
+          grid-template-columns:repeat(2,1fr);
+        }
+
+      }
+
+      @media(max-width:800px){
+
+        .grid4,
+        .grid3,
+        .grid2{
+          grid-template-columns:1fr;
+        }
+
+        .proc-page{
+          padding:14px;
+        }
+
+        .card{
+          padding:16px;
+        }
+
+        .summary-grid{
+          gap:14px;
+        }
+
+        .btn{
+          width:100%;
+        }
+
+      }
+
+
+      @media(max-width:768px){
+
+        .action-row{
+          gap:8px;
+        }
+
+        .action-btn{
+
+          height:32px;
+
+          min-width:64px;
+
+          padding:0 12px;
+
+          font-size:11px;
+
+          border-radius:9px;
+        }
+
+      }
       `}</style>
 
       <div className="proc-page">
@@ -432,6 +820,10 @@ export default function Procurement() {
         {/* IMPORT */}
         <div className="card">
           <div className="small-title">📄 EXCEL IMPORT</div>
+
+          <div className="import-sub">
+            Upload supplier invoice Excel files (.xlsx, .xls)
+          </div>
 
           <button className="btn blue" onClick={() => fileRef.current.click()}>
             Upload Invoice Excel
@@ -558,16 +950,21 @@ export default function Procurement() {
           <div className="small-title">🔍 FILTERS</div>
 
           <div className="grid2">
-            <input
-              placeholder="Search Supplier..."
-              value={filters.supplier}
-              onChange={(e) =>
-                setFilters({
-                  ...filters,
-                  supplier: e.target.value,
-                })
-              }
-            />
+            <div className="filter-wrap">
+              <span className="filter-icon">🔍</span>
+
+              <input
+                className="filter-input"
+                placeholder="Search Supplier..."
+                value={filters.supplier}
+                onChange={(e) =>
+                  setFilters({
+                    ...filters,
+                    supplier: e.target.value,
+                  })
+                }
+              />
+            </div>
 
             <select
               value={filters.status}
@@ -644,7 +1041,7 @@ export default function Procurement() {
                         <div className="action-row">
                           {l.dueAmount > 0 && (
                             <button
-                              className="btn blue"
+                              className="action-btn pay-btn"
                               onClick={() => updatePayment(l.id)}
                             >
                               Pay
@@ -652,8 +1049,7 @@ export default function Procurement() {
                           )}
 
                           <button
-                            className="btn red"
-                            style={{ width: "45%" }}
+                            className="action-btn delete-btn"
                             onClick={() => deleteRow(l.id)}
                           >
                             Delete

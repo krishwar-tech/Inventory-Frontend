@@ -109,10 +109,36 @@ function Masters() {
         Manage Suppliers, Categories, and Customers used across the system
       </div>
 
+      {/* TOP SUMMARY */}
+      <div className="masters-top-grid">
+        <div className="top-master-card">
+          <div className="card-circle"></div>
+          <div className="top-label">Suppliers</div>
+          <div className="top-value blue">{suppliers.length}</div>
+        </div>
+
+        <div className="top-master-card">
+          <div className="card-circle"></div>
+          <div className="top-label">Categories</div>
+          <div className="top-value green">{categories.length}</div>
+        </div>
+
+        <div className="top-master-card">
+          <div className="card-circle"></div>
+          <div className="top-label">Customers</div>
+          <div className="top-value orange">{customers.length}</div>
+        </div>
+      </div>
+
       <div className="masters-grid">
+
         {/* SUPPLIERS */}
         <div className="master-card">
-          <div className="master-head">🚚 SUPPLIERS</div>
+          <div className="master-head">🚚 Suppliers</div>
+
+          <div className="mini-text">
+            {suppliers.length} Active Suppliers
+          </div>
 
           <div className="master-add">
             <input
@@ -122,13 +148,15 @@ function Masters() {
               onChange={(e) => setSupplierName(e.target.value)}
             />
 
-            <button onClick={addSupplier}>+</button>
+            <button className="add-btn" onClick={addSupplier}>
+              +
+            </button>
           </div>
 
           <div className="master-list">
             {suppliers.map((item) => (
               <div className="master-row" key={item.id}>
-                <span>{item.name}</span>
+                <span>🏪 {item.name}</span>
 
                 <button
                   className="delete-btn"
@@ -143,7 +171,11 @@ function Masters() {
 
         {/* CATEGORY */}
         <div className="master-card">
-          <div className="master-head">📁 CATEGORIES</div>
+          <div className="master-head">📦 Categories</div>
+
+          <div className="mini-text">
+            {categories.length} Product Categories
+          </div>
 
           <div className="master-add">
             <input
@@ -153,13 +185,15 @@ function Masters() {
               onChange={(e) => setCategoryName(e.target.value)}
             />
 
-            <button onClick={addCategory}>+</button>
+            <button className="add-btn" onClick={addCategory}>
+              +
+            </button>
           </div>
 
           <div className="master-list">
             {categories.map((item) => (
               <div className="master-row" key={item.id}>
-                <span>{item.name}</span>
+                <span>📁 {item.name}</span>
 
                 {item.canDelete && (
                   <button
@@ -176,7 +210,11 @@ function Masters() {
 
         {/* CUSTOMERS */}
         <div className="master-card">
-          <div className="master-head">👤 CUSTOMERS</div>
+          <div className="master-head">👤 Customers</div>
+
+          <div className="mini-text">
+            {customers.length} Registered Customers
+          </div>
 
           <div className="master-add">
             <input
@@ -186,85 +224,168 @@ function Masters() {
               onChange={(e) => setCustomerName(e.target.value)}
             />
 
-            <button onClick={addCustomer}>+</button>
+            <button className="add-btn" onClick={addCustomer}>
+              +
+            </button>
           </div>
 
           <div className="master-list">
-            {customers.map((item) => (
-              <div className="master-row" key={item.id}>
-                <span>{item.name}</span>
+            {customers.length > 0 ? (
+              customers.map((item) => (
+                <div className="master-row" key={item.id}>
+                  <span>👤 {item.name}</span>
 
-                <button
-                  className="delete-btn"
-                  onClick={() => deleteCustomer(item.id)}
-                >
-                  ×
-                </button>
+                  <button
+                    className="delete-btn"
+                    onClick={() => deleteCustomer(item.id)}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))
+            ) : (
+              <div className="empty-state">
+                No customers added yet
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>
 
       <style>{`
-        .masters-grid{
+
+        .masters-top-grid{
           display:grid;
           grid-template-columns:repeat(3,1fr);
           gap:20px;
-          margin-top:20px;
+          margin-top:26px;
+          margin-bottom:24px;
+        }
+
+        .top-master-card{
+          position:relative;
+          overflow:hidden;
+          background:var(--surface);
+          border:1px solid var(--border);
+          border-radius:24px;
+          padding:28px;
+          min-height:160px;
+          box-shadow:0 4px 18px rgba(0,0,0,0.06);
+        }
+
+        .card-circle{
+          position:absolute;
+          width:120px;
+          height:120px;
+          border-radius:50%;
+          background:rgba(59,130,246,0.05);
+          top:-30px;
+          right:-20px;
+        }
+
+        .top-label{
+          font-size:18px;
+          color:var(--muted);
+          font-weight:700;
+          margin-bottom:18px;
+        }
+
+        .top-value{
+          font-size:58px;
+          font-weight:800;
+          line-height:1;
+        }
+
+        .blue{
+          color:#2563eb;
+        }
+
+        .green{
+          color:#16a34a;
+        }
+
+        .orange{
+          color:#f59e0b;
+        }
+
+        .masters-grid{
+          display:grid;
+          grid-template-columns:repeat(3,1fr);
+          gap:24px;
+          margin-top:10px;
         }
 
         .master-card{
           background:var(--surface);
           border:1px solid var(--border);
-          border-radius:18px;
-          padding:24px;
-          box-shadow:0 1px 2px rgba(0,0,0,.06);
+          border-radius:24px;
+          padding:26px;
+          box-shadow:0 6px 20px rgba(0,0,0,0.05);
+          transition:all 0.3s ease;
+          animation:fadeUp 0.4s ease;
+        }
+
+        .master-card:hover{
+          transform:translateY(-6px);
+          box-shadow:0 20px 40px rgba(0,0,0,0.10);
         }
 
         .master-head{
-          font-size:15px;
+          font-size:24px;
           font-weight:800;
+          color:var(--text);
+          margin-bottom:6px;
+        }
+
+        .mini-text{
+          font-size:13px;
           color:var(--muted);
-          letter-spacing:1px;
           margin-bottom:22px;
         }
 
         .master-add{
           display:flex;
-          gap:10px;
-          margin-bottom:22px;
+          gap:12px;
+          margin-bottom:24px;
         }
 
         .master-add input{
           flex:1;
-          height:50px;
+          height:56px;
           border:1px solid var(--border);
-          border-radius:12px;
-          padding:0 16px;
+          border-radius:16px;
+          padding:0 18px;
           font-size:16px;
           outline:none;
           background:var(--bg);
           color:var(--text);
+          transition:all 0.2s ease;
+        }
+
+        .master-add input:focus{
+          border-color:#2563eb;
+          box-shadow:0 0 0 4px rgba(37,99,235,0.08);
         }
 
         .master-add input::placeholder{
           color:var(--muted);
         }
 
-        .master-add button{
-          width:54px;
+        .add-btn{
+          width:64px;
           border:none;
-          border-radius:12px;
-          background:#166534;
+          border-radius:16px;
+          background:linear-gradient(135deg,#16a34a,#15803d);
           color:#fff;
-          font-size:28px;
+          font-size:34px;
           cursor:pointer;
           font-weight:700;
+          transition:all 0.25s ease;
+          box-shadow:0 10px 20px rgba(22,163,74,0.18);
         }
 
-        .master-add button:hover{
-          background:#15803d;
+        .add-btn:hover{
+          transform:scale(1.05);
         }
 
         .master-list{
@@ -278,37 +399,192 @@ function Masters() {
           justify-content:space-between;
           align-items:center;
           border-bottom:1px solid var(--border);
-          padding:10px 0;
+          padding:14px 0;
           font-size:16px;
           color:var(--text);
         }
+
         .delete-btn{
-          width:36px;
-          height:36px;
+          width:42px;
+          height:42px;
           border:none;
-          border-radius:10px;
-          background:#fee2e2;
-          color:#dc2626 !important;   /* FIXED RED CROSS */
-          font-size:28px;
+          border-radius:12px;
+          background:rgba(239,68,68,0.12);
+          color:#ef4444;
+          font-size:30px;
           font-weight:900;
           cursor:pointer;
-          line-height:36px;
-          text-align:center;
           display:flex;
           align-items:center;
           justify-content:center;
+          transition:all 0.25s ease;
         }
 
         .delete-btn:hover{
           background:#ef4444;
-          color:#ffffff !important;
+          color:#fff;
+          transform:scale(1.08);
         }
 
-        @media(max-width:1000px){
+        .empty-state{
+          text-align:center;
+          padding:40px 10px;
+          color:var(--muted);
+          font-size:15px;
+          opacity:0.7;
+        }
+
+        @keyframes fadeUp{
+          from{
+            opacity:0;
+            transform:translateY(12px);
+          }
+          to{
+            opacity:1;
+            transform:translateY(0);
+          }
+        }
+
+        @media(max-width:1100px){
+
           .masters-grid{
             grid-template-columns:1fr;
           }
+
+          .masters-top-grid{
+            grid-template-columns:1fr;
+          }
         }
+
+        @media(max-width:768px){
+
+          .top-value{
+            font-size:44px;
+          }
+
+          .master-head{
+            font-size:20px;
+          }
+
+          .master-add{
+            flex-direction:column;
+          }
+
+          .add-btn{
+            width:100%;
+            height:54px;
+          }
+        }
+
+        /* TOP SUMMARY CARD HOVER */
+        .top-master-card{
+          transition:all 0.35s ease;
+          cursor:pointer;
+        }
+
+        .top-master-card:hover{
+          transform:translateY(-8px);
+          box-shadow:0 22px 45px rgba(0,0,0,0.12);
+          border-color:rgba(59,130,246,0.22);
+        }
+
+        .top-master-card:hover .card-circle{
+          transform:scale(1.15);
+          opacity:1;
+        }
+
+        /* CIRCLE ANIMATION */
+        .card-circle{
+          transition:all 0.4s ease;
+          opacity:0.8;
+        }
+
+        /* MASTER CARD HOVER */
+        .master-card{
+          transition:all 0.35s ease;
+        }
+
+        .master-card:hover{
+          transform:translateY(-8px);
+          box-shadow:0 22px 45px rgba(0,0,0,0.12);
+          border-color:rgba(59,130,246,0.22);
+        }
+
+        /* INPUT HOVER */
+        .master-add input:hover{
+          border-color:#94a3b8;
+        }
+
+        /* ADD BUTTON HOVER */
+        .add-btn:hover{
+          transform:translateY(-2px) scale(1.05);
+          box-shadow:0 18px 35px rgba(22,163,74,0.28);
+        }
+
+        /* DELETE BUTTON HOVER */
+        .delete-btn:hover{
+          transform:scale(1.12) rotate(6deg);
+          box-shadow:0 10px 18px rgba(239,68,68,0.22);
+        }
+
+        /* ROW HOVER */
+        .master-row{
+          transition:all 0.25s ease;
+          border-radius:12px;
+          padding-left:10px;
+          padding-right:10px;
+        }
+
+        .master-row:hover{
+          background:rgba(148,163,184,0.08);
+          transform:translateX(4px);
+        }
+
+        /* DARK MODE ROW HOVER */
+        .dark .master-row:hover{
+          background:rgba(255,255,255,0.04);
+        }
+
+        /* SMOOTH ICON MOVEMENT */
+        .master-row span{
+          transition:all 0.25s ease;
+        }
+
+        .master-row:hover span{
+          transform:translateX(3px);
+        }
+
+        /* PREMIUM GLOW */
+        .master-card::before{
+          content:"";
+          position:absolute;
+          inset:0;
+          border-radius:24px;
+          padding:1px;
+          background:linear-gradient(
+            135deg,
+            rgba(59,130,246,0.10),
+            transparent,
+            rgba(16,185,129,0.08)
+          );
+          -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          -webkit-mask-composite:xor;
+          pointer-events:none;
+          opacity:0;
+          transition:0.35s ease;
+        }
+
+        .master-card{
+          position:relative;
+          overflow:hidden;
+        }
+
+        .master-card:hover::before{
+          opacity:1;
+        }
+
       `}</style>
     </section>
   );

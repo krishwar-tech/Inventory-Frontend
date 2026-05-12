@@ -1,107 +1,338 @@
 import { useEffect, useState } from "react";
 
 function Topbar() {
-  const [time, setTime] = useState("");
+
   const [lowStockCount, setLowStockCount] = useState(0);
+
+  const [time, setTime] = useState("");
+
   const [darkMode, setDarkMode] = useState(
     localStorage.getItem("theme") === "dark",
   );
 
   useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
+    loadLowStock();
 
-      const timeStr = now.toLocaleTimeString("en-IN", {
+    updateTime();
+
+    const timer = setInterval(updateTime, 1000);
+
+    return () => clearInterval(timer);
+
+  }, []);
+
+  useEffect(() => {
+
+    if (darkMode) {
+
+      document.body.classList.add("dark-theme");
+
+      document.body.style.background = "#0f172a";
+
+    } else {
+
+      document.body.classList.remove("dark-theme");
+
+      document.body.style.background = "#f8fafc";
+    }
+
+    localStorage.setItem(
+      "theme",
+      darkMode ? "dark" : "light"
+    );
+
+    applyDashboardTheme();
+
+  }, [darkMode]);
+
+  const updateTime = () => {
+
+    const now = new Date();
+
+    const currentTime = now.toLocaleTimeString(
+      "en-IN",
+      {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
+      }
+    );
+
+    setTime(currentTime);
+  };
+
+  const applyDashboardTheme = () => {
+
+    const cards = document.querySelectorAll(
+      ".stat-card,.dashboard-card,.card"
+    );
+
+    const dashboard =
+      document.querySelector(".dashboard-section");
+
+    const title =
+      document.querySelector(".dashboard-title");
+
+    const sub =
+      document.querySelector(".dashboard-sub");
+
+    if (darkMode) {
+
+      cards.forEach((card) => {
+
+        card.style.background = "#111827";
+
+        card.style.border =
+          "1px solid #1f2937";
+
+        card.style.boxShadow = "none";
       });
 
-      const ampm = now.getHours() >= 12 ? "pm" : "am";
+      if (dashboard) {
+        dashboard.style.background = "#0f172a";
+      }
 
-      setTime(`${timeStr} ${ampm}`);
-    };
+      if (title) {
+        title.style.color = "#f9fafb";
+      }
 
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
+      if (sub) {
+        sub.style.color = "#9ca3af";
+      }
 
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    loadLowStock();
-
-    const interval = setInterval(() => {
-      loadLowStock();
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (darkMode) {
-      document.body.classList.add("dark-theme");
-      localStorage.setItem("theme", "dark");
     } else {
-      document.body.classList.remove("dark-theme");
-      localStorage.setItem("theme", "light");
+
+      cards.forEach((card) => {
+
+        card.style.background = "#ffffff";
+
+        card.style.border =
+          "1px solid #e5e7eb";
+
+        card.style.boxShadow =
+          "0 10px 30px rgba(0,0,0,.04)";
+      });
+
+      if (dashboard) {
+        dashboard.style.background = "#f8fafc";
+      }
+
+      if (title) {
+        title.style.color = "#111827";
+      }
+
+      if (sub) {
+        sub.style.color = "#64748b";
+      }
     }
-  }, [darkMode]);
+  };
 
   const loadLowStock = async () => {
+
     try {
-      const res = await fetch("https://inventory-backend-final-1.onrender.com/api/reports/dashboard");
+
+      const res = await fetch(
+        "https://inventory-backend-final-1.onrender.com/api/reports/dashboard"
+      );
+
       const data = await res.json();
 
-      setLowStockCount(data.lowStockCount || 0);
+      setLowStockCount(
+        data.lowStockCount || 0
+      );
+
     } catch (error) {
+
       console.log(error);
     }
   };
 
   return (
-    <header className="topbar">
-      <div className="logo">
-        Stock<span>Flow</span>
-      </div>
+    <>
+      <style>{`
 
-      <div style={{ flex: 1 }}></div>
+        .topbar{
+          height:68px;
 
-      <div className="topbar-right">
-        {/* DARK MODE TOGGLE */}
-        <button
-          onClick={() => setDarkMode(!darkMode)}
-          style={{
-            border: "1px solid #374151",
-            borderRadius: "30px",
-            padding: "8px 14px",
-            cursor: "pointer",
-            fontWeight: "700",
-            background: darkMode ? "#1e293b" : "#f3f4f6",
-            color: darkMode ? "#fff" : "#111827",
-          }}
-        >
-          {darkMode ? "🌙 Dark" : "☀ Light"}
-        </button>
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
 
-        {/* TIME */}
-        <span style={{ fontFamily: "DM Mono, monospace" }}>{time}</span>
+          padding:0 22px;
 
-        {/* LOW STOCK */}
-        <span
-          style={{
-            background: "#dc2626",
-            color: "white",
-            borderRadius: "20px",
-            padding: "4px 10px",
-            fontSize: "12px",
-            fontWeight: "600",
-          }}
-        >
-          ⚠ {lowStockCount} Low Stock
-        </span>
-      </div>
-    </header>
+          background:#ffffff;
+
+          border-bottom:1px solid #e5e7eb;
+
+          position:sticky;
+          top:0;
+          z-index:100;
+        }
+
+        .dark-theme .topbar{
+          background:#111827;
+          border-bottom:1px solid #1f2937;
+        }
+
+        .logo{
+          font-size:20px;
+          font-weight:800;
+
+          color:#111827;
+
+          letter-spacing:-0.5px;
+        }
+
+        .dark-theme .logo{
+          color:#f9fafb;
+        }
+
+        .logo span{
+          color:#2563eb;
+        }
+
+        .topbar-right{
+          display:flex;
+          align-items:center;
+          gap:12px;
+        }
+
+        .theme-btn{
+          border:none;
+
+          height:40px;
+
+          padding:0 15px;
+
+          border-radius:12px;
+
+          cursor:pointer;
+
+          font-weight:700;
+
+          font-size:13px;
+
+          background:#f3f4f6;
+
+          color:#111827;
+
+          transition:.25s ease;
+        }
+
+        .theme-btn:hover{
+          transform:translateY(-1px);
+        }
+
+        .dark-theme .theme-btn{
+          background:#1f2937;
+          color:#f9fafb;
+        }
+
+        .clock-box{
+          height:40px;
+
+          padding:0 14px;
+
+          border-radius:12px;
+
+          background:#eff6ff;
+
+          color:#2563eb;
+
+          font-size:13px;
+
+          font-weight:700;
+
+          display:flex;
+          align-items:center;
+
+          border:1px solid #dbeafe;
+        }
+
+        .dark-theme .clock-box{
+          background:#172554;
+          color:#93c5fd;
+          border:1px solid #1e3a8a;
+        }
+
+        .stock-alert{
+          background:#ef4444;
+
+          color:#fff;
+
+          padding:10px 14px;
+
+          border-radius:12px;
+
+          font-size:13px;
+
+          font-weight:700;
+
+          display:flex;
+          align-items:center;
+
+          gap:7px;
+        }
+
+        @media(max-width:700px){
+
+          .topbar{
+            padding:0 14px;
+          }
+
+          .logo{
+            font-size:18px;
+          }
+
+          .theme-btn{
+            padding:0 12px;
+            font-size:12px;
+          }
+
+          .clock-box{
+            padding:0 10px;
+            font-size:11px;
+          }
+
+          .stock-alert{
+            padding:9px 11px;
+            font-size:12px;
+          }
+
+        }
+
+      `}</style>
+
+      <header className="topbar">
+
+        <div className="logo">
+          Stock<span>Flow</span>
+        </div>
+
+        <div className="topbar-right">
+
+          {/* TIME */}
+          <div className="clock-box">
+            🕒 {time}
+          </div>
+
+          {/* DARK MODE */}
+          <button
+            className="theme-btn"
+            onClick={() => setDarkMode(!darkMode)}
+          >
+            {darkMode ? "🌙 Dark" : "☀ Light"}
+          </button>
+
+          {/* LOW STOCK */}
+          <div className="stock-alert">
+            ⚠ {lowStockCount} Low Stock
+          </div>
+
+        </div>
+
+      </header>
+    </>
   );
 }
 
