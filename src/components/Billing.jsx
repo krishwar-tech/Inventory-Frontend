@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import api from "../services/api";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import { Html5QrcodeScanner } from "html5-qrcode";
 
@@ -23,8 +23,6 @@ export default function Billing() {
 
   const scannerRef = useRef(null);
 
-  const API = "https://inventory-backend-final-1.onrender.com/api";
-
   const handleEnter = (e) => {
     if (e.key === "Enter") {
       fetchProduct(barcode);
@@ -39,10 +37,10 @@ export default function Billing() {
     try {
       const clean = code.trim();
 
-      const res = await axios.get(`${API}/products/scan/${clean}`);
+      const data = await api.get(`/products/scan/${clean}`);
 
-      if (res.data.exists && res.data.product) {
-        const product = res.data.product;
+      if (data.exists && data.product) {
+        const product = data.product;
 
         if (product.status === "PENDING") {
           alert("This product is pending approval.");
@@ -106,9 +104,7 @@ export default function Billing() {
 
     if (exists) {
       setCart(
-        cart.map((x) =>
-          x.id === product.id ? { ...x, qty: x.qty + 1 } : x
-        )
+        cart.map((x) => (x.id === product.id ? { ...x, qty: x.qty + 1 } : x)),
       );
     } else {
       setCart([
@@ -141,28 +137,17 @@ export default function Billing() {
     setPaymentMode("Cash");
   };
 
-  const subtotal = cart.reduce(
-    (sum, item) => sum + item.price * item.qty,
-    0
-  );
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
-  const totalItems = cart.reduce(
-    (sum, item) => sum + item.qty,
-    0
-  );
+  const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
 
-  const safeDiscount =
-    discount > subtotal ? subtotal : discount;
+  const safeDiscount = discount > subtotal ? subtotal : discount;
 
   const tax = (subtotal - safeDiscount) * 0.05;
 
-  const grandTotal =
-    subtotal - safeDiscount + tax;
+  const grandTotal = subtotal - safeDiscount + tax;
 
-  const totalPaid =
-    Number(cashPaid) +
-    Number(upiPaid) +
-    Number(cardPaid);
+  const totalPaid = Number(cashPaid) + Number(upiPaid) + Number(cardPaid);
 
   const balance = totalPaid - grandTotal;
 
@@ -180,13 +165,19 @@ export default function Billing() {
     }
 
     try {
-      await axios.post(`${API}/billing/checkout`, {
+      const response = await api.post("/billing/checkout", {
         customerName: "Walk-in Customer",
+
         customerMobile: "",
+
         paymentMode,
+
         discount: safeDiscount,
+
         cashPaid,
+
         upiPaid,
+
         cardPaid,
 
         items: cart.map((x) => ({
@@ -196,11 +187,15 @@ export default function Billing() {
         })),
       });
 
-      alert("Invoice Created");
+      console.log(response);
+
+      alert("Billing completed successfully");
 
       clearAll();
-    } catch {
-      alert("Checkout failed");
+    } catch (error) {
+      console.log(error);
+
+      alert("Billing failed");
     }
   };
 
@@ -213,7 +208,7 @@ export default function Billing() {
         fps: 10,
         qrbox: 220,
       },
-      false
+      false,
     );
 
     scanner.render(
@@ -232,7 +227,7 @@ export default function Billing() {
           setScanLock(false);
         }, 800);
       },
-      () => {}
+      () => {},
     );
 
     scannerRef.current = scanner;
@@ -703,24 +698,17 @@ export default function Billing() {
       `}</style>
 
       <div className="billing-page">
-
         {/* LEFT */}
 
         <div className="billing-left">
-
-          <div className="billing-title">
-            Billing
-          </div>
+          <div className="billing-title">Billing</div>
 
           <div className="billing-sub">
             Barcode-only lookup — scan products instantly
           </div>
 
           <div className="scan-box">
-
-            <div className="scan-icon">
-              ▌▌▌
-            </div>
+            <div className="scan-icon">▌▌▌</div>
 
             <input
               className="scan-input"
@@ -730,10 +718,7 @@ export default function Billing() {
               onKeyDown={handleEnter}
             />
 
-            <button
-              className="scan-btn"
-              onClick={() => setScannerOpen(true)}
-            >
+            <button className="scan-btn" onClick={() => setScannerOpen(true)}>
               📷 Camera
             </button>
 
@@ -751,86 +736,54 @@ export default function Billing() {
               style={{ display: "none" }}
               onChange={handleImageUpload}
             />
-
           </div>
 
           {/* CART */}
 
           <div className="cart-box">
-
             <div className="cart-top">
+              <div className="cart-title">🛒 Cart</div>
 
-              <div className="cart-title">
-                🛒 Cart
-              </div>
-
-              <button
-                className="clear-btn"
-                onClick={clearAll}
-              >
+              <button className="clear-btn" onClick={clearAll}>
                 Clear All
               </button>
-
             </div>
 
             {cart.length === 0 ? (
-
               <div className="empty">
+                <div className="empty-icon">🛒</div>
 
-                <div className="empty-icon">
-                  🛒
-                </div>
-
-                <div>
-                  No items added yet
-                </div>
+                <div>No items added yet</div>
 
                 <div style={{ marginTop: 6 }}>
                   Scan barcode to start billing
                 </div>
-
               </div>
-
             ) : (
-
               <div className="cart-items">
-
                 {cart.map((item) => (
-
-                  <div
-                    className="cart-item"
-                    key={item.id}
-                  >
-
+                  <div className="cart-item" key={item.id}>
                     <div>
-
-                      <div className="item-name">
-                        {item.name}
-                      </div>
+                      <div className="item-name">{item.name}</div>
 
                       <div className="item-price">
                         ₹{item.price} × {item.qty}
                       </div>
-
                     </div>
 
                     <div className="qty-box">
-
                       <input
                         type="number"
                         min="1"
                         value={item.qty}
                         className="qty-input"
                         onChange={(e) => {
-                          const value =
-                            parseInt(e.target.value) || 1;
+                          const value = parseInt(e.target.value) || 1;
 
                           setCart((prev) =>
                             prev.map((p) =>
-                              p.id === item.id
-                                ? { ...p, qty: value }
-                                : p
-                            )
+                              p.id === item.id ? { ...p, qty: value } : p,
+                            ),
                           );
                         }}
                       />
@@ -851,61 +804,40 @@ export default function Billing() {
                       >
                         ×
                       </button>
-
                     </div>
-
                   </div>
-
                 ))}
-
               </div>
-
             )}
-
           </div>
-
         </div>
 
         {/* RIGHT */}
 
         <div className="billing-right">
-
           <div className="total-card">
+            <div className="total-label">TOTAL PAYABLE</div>
 
-            <div className="total-label">
-              TOTAL PAYABLE
-            </div>
+            <div className="total-amount">₹{grandTotal.toFixed(2)}</div>
 
-            <div className="total-amount">
-              ₹{grandTotal.toFixed(2)}
-            </div>
-
-            <div className="total-items">
-              {totalItems} items
-            </div>
-
+            <div className="total-items">{totalItems} items</div>
           </div>
 
           <div className="summary">
-
             <div className="row">
               <span>Subtotal</span>
               <span>₹{subtotal.toFixed(2)}</span>
             </div>
 
             <div className="row">
-
               <span>Discount</span>
 
               <input
                 type="number"
                 min="0"
                 value={discount}
-                onChange={(e) =>
-                  setDiscount(Number(e.target.value))
-                }
+                onChange={(e) => setDiscount(Number(e.target.value))}
               />
-
             </div>
 
             <div className="row">
@@ -914,78 +846,53 @@ export default function Billing() {
             </div>
 
             <div className="row">
-
               <span>Payment</span>
 
               <select
                 value={paymentMode}
-                onChange={(e) =>
-                  setPaymentMode(e.target.value)
-                }
+                onChange={(e) => setPaymentMode(e.target.value)}
               >
                 <option>Cash</option>
                 <option>UPI</option>
                 <option>Card</option>
                 <option>Split</option>
               </select>
-
             </div>
 
-            {(paymentMode === "Cash" ||
-              paymentMode === "Split") && (
-
+            {(paymentMode === "Cash" || paymentMode === "Split") && (
               <div className="row">
-
                 <span>Cash</span>
 
                 <input
                   type="number"
                   value={cashPaid}
-                  onChange={(e) =>
-                    setCashPaid(Number(e.target.value))
-                  }
+                  onChange={(e) => setCashPaid(Number(e.target.value))}
                 />
-
               </div>
-
             )}
 
-            {(paymentMode === "UPI" ||
-              paymentMode === "Split") && (
-
+            {(paymentMode === "UPI" || paymentMode === "Split") && (
               <div className="row">
-
                 <span>UPI</span>
 
                 <input
                   type="number"
                   value={upiPaid}
-                  onChange={(e) =>
-                    setUpiPaid(Number(e.target.value))
-                  }
+                  onChange={(e) => setUpiPaid(Number(e.target.value))}
                 />
-
               </div>
-
             )}
 
-            {(paymentMode === "Card" ||
-              paymentMode === "Split") && (
-
+            {(paymentMode === "Card" || paymentMode === "Split") && (
               <div className="row">
-
                 <span>Card</span>
 
                 <input
                   type="number"
                   value={cardPaid}
-                  onChange={(e) =>
-                    setCardPaid(Number(e.target.value))
-                  }
+                  onChange={(e) => setCardPaid(Number(e.target.value))}
                 />
-
               </div>
-
             )}
 
             <div className="row">
@@ -994,58 +901,33 @@ export default function Billing() {
             </div>
 
             <div className="row">
+              <span>{balance >= 0 ? "Balance" : "Pending"}</span>
 
-              <span>
-                {balance >= 0 ? "Balance" : "Pending"}
-              </span>
-
-              <span>
-                ₹{Math.abs(balance).toFixed(2)}
-              </span>
-
+              <span>₹{Math.abs(balance).toFixed(2)}</span>
             </div>
 
             <div className="big-total">
-
               <span>Total</span>
 
-              <span>
-                ₹{grandTotal.toFixed(2)}
-              </span>
-
+              <span>₹{grandTotal.toFixed(2)}</span>
             </div>
 
-            <button
-              className="checkout-btn"
-              onClick={checkout}
-            >
+            <button className="checkout-btn" onClick={checkout}>
               ✔ Complete Billing
             </button>
 
-            <button
-              className="cancel-btn"
-              onClick={clearAll}
-            >
+            <button className="cancel-btn" onClick={clearAll}>
               ✖ Cancel Bill
             </button>
-
           </div>
-
         </div>
-
       </div>
 
       {scannerOpen && (
-
         <div className="overlay">
-
           <div className="modal">
-
             <div className="modal-top">
-
-              <h3>
-                Scan Barcode
-              </h3>
+              <h3>Scan Barcode</h3>
 
               <button
                 className="close-btn"
@@ -1053,15 +935,11 @@ export default function Billing() {
               >
                 ×
               </button>
-
             </div>
 
             <div id="reader"></div>
-
           </div>
-
         </div>
-
       )}
     </>
   );

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-
+import api from "../services/api";
 export default function Inventory() {
   const [products, setProducts] = useState([]);
   const [history, setHistory] = useState([]);
@@ -20,10 +19,8 @@ export default function Inventory() {
 
   const loadProducts = async () => {
     try {
-      const res = await axios.get(
-        "https://inventory-backend-final-1.onrender.com/api/inventory"
-      );
-      setProducts(res.data);
+      const res = await api.get("/inventory");
+      setProducts(res);
     } catch (err) {
       console.log(err);
     }
@@ -31,10 +28,8 @@ export default function Inventory() {
 
   const loadHistory = async () => {
     try {
-      const res = await axios.get(
-        "https://inventory-backend-final-1.onrender.com/api/inventory/history"
-      );
-      setHistory(res.data);
+      const res = await api.get("/inventory/history");
+      setHistory(res);
     } catch (err) {
       console.log(err);
     }
@@ -89,8 +84,8 @@ export default function Inventory() {
     }
 
     try {
-      await axios.post(
-        `https://inventory-backend-final-1.onrender.com/api/inventory/damage?productId=${action.productId}&qty=${action.qty}&remarks=${action.remarks}`
+      await api.post(
+        `/inventory/damage?productId=${action.productId}&qty=${action.qty}&remarks=${action.remarks}`,
       );
 
       alert("Damaged stock updated");
@@ -108,8 +103,8 @@ export default function Inventory() {
     }
 
     try {
-      await axios.post(
-        `https://inventory-backend-final-1.onrender.com/api/inventory/return?productId=${action.productId}&qty=${action.qty}&remarks=${action.remarks}`
+      await api.post(
+        `/inventory/damage?productId=${action.productId}&qty=${action.qty}&remarks=${action.remarks}`,
       );
 
       alert("Return stock added");
@@ -127,8 +122,8 @@ export default function Inventory() {
     }
 
     try {
-      await axios.post(
-        `https://inventory-backend-final-1.onrender.com/api/inventory/adjust?productId=${action.productId}&qty=${action.qty}&mode=${action.mode}&remarks=${action.remarks}`
+      await api.post(
+        `/inventory/damage?productId=${action.productId}&qty=${action.qty}&remarks=${action.remarks}`,
       );
 
       alert("Stock adjusted");
@@ -165,9 +160,6 @@ export default function Inventory() {
         width:100%;
       }
 
-      /* =========================
-        SUMMARY CARDS
-      ========================= */
 
       .summary-grid{
         display:grid;
@@ -232,9 +224,6 @@ export default function Inventory() {
         color:#ef4444;
       }
 
-      /* =========================
-        MAIN CARDS
-      ========================= */
 
       .inventory-card{
         background:#ffffff;
@@ -260,19 +249,12 @@ export default function Inventory() {
         color:#0f172a;
       }
 
-      /* =========================
-        FORM GRID
-      ========================= */
 
       .action-grid{
         display:grid;
         grid-template-columns:2fr 1fr 1fr 2fr;
         gap:14px;
       }
-
-      /* =========================
-        INPUTS
-      ========================= */
 
       input,
       select{
@@ -292,10 +274,6 @@ export default function Inventory() {
         border-color:#2563eb;
         box-shadow:0 0 0 4px rgba(37,99,235,.08);
       }
-
-      /* =========================
-        BUTTONS
-      ========================= */
 
       .btn{
         border:none;
@@ -325,10 +303,6 @@ export default function Inventory() {
         background:linear-gradient(135deg,#ef4444,#dc2626);
       }
 
-      /* =========================
-        FILTER CHIPS
-      ========================= */
-
       .filter-group{
         display:flex;
         gap:10px;
@@ -355,10 +329,6 @@ export default function Inventory() {
         background:#2563eb !important;
         color:#fff !important;
       }
-
-      /* =========================
-        TABLE
-      ========================= */
 
       .inventory-scroll{
         overflow:auto;
@@ -404,10 +374,6 @@ export default function Inventory() {
         padding:18px 14px;
         color:#0f172a;
       }
-
-      /* =========================
-        STOCK COLORS
-      ========================= */
 
       .safe-row{
         border-left:4px solid #22c55e;
@@ -458,10 +424,6 @@ export default function Inventory() {
         transition:width .4s ease;
       }
 
-      /* =========================
-        BADGES
-      ========================= */
-
       .badge{
         padding:8px 14px;
         border-radius:999px;
@@ -496,10 +458,6 @@ export default function Inventory() {
         font-size:12px;
         font-weight:800;
       }
-
-      /* =========================
-        DARK MODE
-      ========================= */
 
       body.dark-theme .sum-card,
       body.dark-theme .inventory-card{
@@ -565,10 +523,6 @@ export default function Inventory() {
         background:#334155;
       }
 
-      /* =========================
-        RESPONSIVE
-      ========================= */
-
       @media(max-width:900px){
 
         .summary-grid{
@@ -613,18 +567,17 @@ export default function Inventory() {
       `}</style>
 
       <div className="page-content inventory-wrap">
-
         <div className="page-header">
           <h1>Inventory</h1>
           <p>
-            Live stock controls with damage, returns, adjustments and movement tracking.
+            Live stock controls with damage, returns, adjustments and movement
+            tracking.
           </p>
         </div>
 
         {/* SUMMARY */}
 
         <div className="summary-grid">
-
           <div className="sum-card sum-blue">
             <div className="sum-title">📦 Total Products</div>
             <div className="sum-number">{summary.total}</div>
@@ -644,19 +597,16 @@ export default function Inventory() {
             <div className="sum-title">🔁 Reorder Now</div>
             <div className="sum-number">{summary.reorder}</div>
           </div>
-
         </div>
 
         {/* STOCK ACTIONS */}
 
         <div className="inventory-card">
-
           <div className="inventory-top">
             <h3>⚙ STOCK ACTIONS</h3>
           </div>
 
           <div className="action-grid">
-
             <select
               value={action.productId}
               onChange={(e) =>
@@ -709,7 +659,6 @@ export default function Inventory() {
                 })
               }
             />
-
           </div>
 
           <div
@@ -720,7 +669,6 @@ export default function Inventory() {
               marginTop: 18,
             }}
           >
-
             <button className="btn green" onClick={returnStock}>
               + Return
             </button>
@@ -732,21 +680,16 @@ export default function Inventory() {
             <button className="btn red" onClick={damageStock}>
               - Damage
             </button>
-
           </div>
-
         </div>
 
         {/* STOCK LEVELS */}
 
         <div className="inventory-card">
-
           <div className="inventory-top">
-
             <h3>📋 STOCK LEVELS</h3>
 
             <div className="filter-group">
-
               <button
                 className={`filter-chip ${filter === "ALL" ? "chip-active" : ""}`}
                 onClick={() => setFilter("ALL")}
@@ -795,15 +738,11 @@ export default function Inventory() {
               >
                 C-Class
               </button>
-
             </div>
-
           </div>
 
           <div className="inventory-scroll">
-
             <table className="inventory-table">
-
               <thead>
                 <tr>
                   <th>PRODUCT</th>
@@ -820,24 +759,20 @@ export default function Inventory() {
               </thead>
 
               <tbody>
-
                 {filteredProducts.map((item) => {
-
                   const status = getStatus(item);
 
                   return (
-
                     <tr
                       key={item.id}
                       className={
                         status === "SAFE"
                           ? "safe-row"
                           : status === "LOW"
-                          ? "low-row"
-                          : "reorder-row"
+                            ? "low-row"
+                            : "reorder-row"
                       }
                     >
-
                       <td>{item.name}</td>
 
                       <td>{item.sku}</td>
@@ -845,16 +780,14 @@ export default function Inventory() {
                       <td>{item.category?.name || "-"}</td>
 
                       <td>
-
                         <div className="stock-box">
-
                           <span
                             className={`stock-number ${
                               status === "SAFE"
                                 ? "stock-safe"
                                 : status === "LOW"
-                                ? "stock-low"
-                                : "stock-zero"
+                                  ? "stock-low"
+                                  : "stock-zero"
                             }`}
                           >
                             {item.stock || 0}
@@ -866,15 +799,13 @@ export default function Inventory() {
                               style={{
                                 width: `${Math.min(
                                   (item.stock || 0) * 2,
-                                  100
+                                  100,
                                 )}%`,
                                 background: getBarColor(status),
                               }}
                             ></div>
                           </div>
-
                         </div>
-
                       </td>
 
                       <td>{item.unit}</td>
@@ -884,7 +815,6 @@ export default function Inventory() {
                       <td>{item.safetyStock || 5}</td>
 
                       <td>
-
                         <span
                           className="badge"
                           style={{
@@ -892,13 +822,12 @@ export default function Inventory() {
                               status === "SAFE"
                                 ? "#22c55e"
                                 : status === "LOW"
-                                ? "#f59e0b"
-                                : "#ef4444",
+                                  ? "#f59e0b"
+                                  : "#ef4444",
                           }}
                         >
                           {status}
                         </span>
-
                       </td>
 
                       <td>
@@ -912,32 +841,23 @@ export default function Inventory() {
                           {item.fsnClass || "N"}
                         </span>
                       </td>
-
                     </tr>
-
                   );
                 })}
-
               </tbody>
-
             </table>
-
           </div>
-
         </div>
 
         {/* HISTORY */}
 
         <div className="inventory-card">
-
           <div className="inventory-top">
             <h3>⚡ STOCK ACTION HISTORY</h3>
           </div>
 
           <div className="inventory-scroll">
-
             <table className="history-table">
-
               <thead>
                 <tr>
                   <th>PRODUCT</th>
@@ -949,19 +869,16 @@ export default function Inventory() {
               </thead>
 
               <tbody>
-
                 {history
                   .filter(
                     (h) =>
                       h.type === "RETURN" ||
                       h.type === "DAMAGE" ||
                       h.type === "ADJUST_IN" ||
-                      h.type === "ADJUST_OUT"
+                      h.type === "ADJUST_OUT",
                   )
                   .map((h) => (
-
                     <tr key={h.id}>
-
                       <td>{h.product?.name}</td>
 
                       <td>
@@ -980,23 +897,14 @@ export default function Inventory() {
                       <td>{h.remarks || "-"}</td>
 
                       <td>
-                        {h.createdAt
-                          ?.replace("T", " ")
-                          ?.substring(0, 19)}
+                        {h.createdAt?.replace("T", " ")?.substring(0, 19)}
                       </td>
-
                     </tr>
-
                   ))}
-
               </tbody>
-
             </table>
-
           </div>
-
         </div>
-
       </div>
     </>
   );

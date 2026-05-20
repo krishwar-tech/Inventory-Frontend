@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import api from "../services/api";
 import {
   PieChart,
   Pie,
@@ -71,11 +72,7 @@ function Dashboard() {
 
   const loadDashboard = async () => {
     try {
-      const res = await fetch(
-        "https://inventory-backend-final-1.onrender.com/api/reports/dashboard",
-      );
-
-      const data = await res.json();
+      const data = await api.get("/reports/dashboard");
 
       setStats({
         totalProducts: data.totalProducts || 0,
@@ -577,7 +574,16 @@ function Dashboard() {
                 </div>
               </div>
 
-              <button className="restock-btn">Restock</button>
+              <button
+                className="restock-btn"
+                onClick={() => {
+                  localStorage.setItem("activePage", "procurement");
+
+                  window.location.reload();
+                }}
+              >
+                Restock
+              </button>
             </div>
           ))}
         </div>

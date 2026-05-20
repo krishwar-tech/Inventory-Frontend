@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../services/api";
 
 export default function PendingProducts() {
   const [rows, setRows] = useState([]);
@@ -12,9 +12,9 @@ export default function PendingProducts() {
 
   const loadData = async () => {
     try {
-      const res = await axios.get("https://inventory-backend-final-1.onrender.com/api/products/pending");
+      const res = await api.get("/products/pending");
 
-      setRows(Array.isArray(res.data) ? res.data : []);
+      setRows(Array.isArray(res) ? res : []);
     } catch (error) {
       console.log(error);
     } finally {
@@ -37,11 +37,10 @@ export default function PendingProducts() {
     }
 
     try {
-      await axios.put(`https://inventory-backend-final-1.onrender.com/api/products/approve/${id}`, {
+      await api.put(`/products/approve/${id}`, {
         price: parseFloat(price),
         mrp: parseFloat(mrp),
       });
-
       alert("Product Approved");
 
       loadData();

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import jsPDF from "jspdf";
-
+import api from "../services/api";
 function Reports() {
   const [tab, setTab] = useState("sales");
 
@@ -26,56 +26,55 @@ function Reports() {
     loadReports();
   }, []);
 
-  const loadReports = async () => {
-    try {
-      const res = await fetch(
-        "https://inventory-backend-final-1.onrender.com/api/reports/dashboard"
-      );
+ const loadReports = async () => {
 
-      const json = await res.json();
+  try {
 
-      setData({
-        totalRevenue: json.totalRevenue || 0,
-        unitsSold: json.unitsSold || 0,
-        transactions: json.transactions || 0,
-        salesRows: json.salesRows || [],
-        totalPurchase: json.totalPurchase || 0,
-        unitsPurchased: json.unitsPurchased || 0,
-        purchaseRows: json.purchaseRows || [],
-        lowStockCount: json.lowStockCount || 0,
-        lowStock: json.lowStock || [],
-      });
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const json = await api.get("/reports/dashboard");
+
+    setData({
+      totalRevenue: json.totalRevenue || 0,
+      unitsSold: json.unitsSold || 0,
+      transactions: json.transactions || 0,
+      salesRows: json.salesRows || [],
+      totalPurchase: json.totalPurchase || 0,
+      unitsPurchased: json.unitsPurchased || 0,
+      purchaseRows: json.purchaseRows || [],
+      lowStockCount: json.lowStockCount || 0,
+      lowStock: json.lowStock || [],
+    });
+
+  } catch (err) {
+
+    console.log(err);
+
+  } finally {
+
+    setLoading(false);
+  }
+};
 
   const money = (n) => `₹${Number(n || 0).toFixed(2)}`;
 
-  const previewInvoice = async (saleId) => {
-    try {
-      const res = await fetch(
-        `https://inventory-backend-final-1.onrender.com/api/billing/invoice/${saleId}`
-      );
+ const previewInvoice = async (saleId) => {
 
-      const json = await res.json();
+  try {
 
-      setInvoice(json);
-      setShowInvoice(true);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+    const json = await api.get(`/billing/invoice/${saleId}`);
+
+    setInvoice(json);
+
+    setShowInvoice(true);
+
+  } catch (err) {
+
+    console.log(err);
+  }
+};
 
   const downloadPdf = async (saleId) => {
     try {
-      const res = await fetch(
-        `https://inventory-backend-final-1.onrender.com/api/billing/invoice/${saleId}`
-      );
-
-      const json = await res.json();
+      const json = await api.get(`/billing/invoice/${saleId}`);
 
       const doc = new jsPDF();
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Html5QrcodeScanner, Html5Qrcode } from "html5-qrcode";
+import api from "../services/api";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -29,29 +30,26 @@ export default function Products() {
   });
 
   const loadProducts = async () => {
-    const res = await fetch(
-      "https://inventory-backend-final-1.onrender.com/api/products",
-    );
-    const data = await res.json();
-    setProducts(Array.isArray(data) ? data : []);
+    try {
+      const data = await api.get("/products");
+
+      setProducts(Array.isArray(data) ? data : []);
+    } catch {
+      setProducts([]);
+    }
   };
 
   const loadStats = async () => {
     try {
-      const res = await fetch(
-        "https://inventory-backend-final-1.onrender.com/api/products/stats",
-      );
-      const data = await res.json();
+      const data = await api.get("/products/stats");
+
       setStats(data);
     } catch {}
   };
 
   const loadCategories = async () => {
     try {
-      const res = await fetch(
-        "https://inventory-backend-final-1.onrender.com/api/masters/categories",
-      );
-      const data = await res.json();
+      const data = await api.get("/masters/categories");
 
       setCategories(Array.isArray(data) ? data : []);
     } catch {
@@ -100,32 +98,19 @@ export default function Products() {
 
   const handleAdd = async () => {
     try {
-      const res = await fetch(
-        "https://inventory-backend-final-1.onrender.com/api/products",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: form.name,
-            barcode: form.barcode,
-            categoryId: form.categoryId,
-            mrp: Number(form.mrp) || 0,
-            price: Number(form.price) || 0,
-            unit: form.unit,
-          }),
-        },
-      );
-
-      if (!res.ok) {
-        const txt = await res.text();
-        alert(txt);
-        return;
-      }
+      await api.post("/products", {
+        name: form.name,
+        barcode: form.barcode,
+        categoryId: form.categoryId,
+        mrp: Number(form.mrp) || 0,
+        price: Number(form.price) || 0,
+        unit: form.unit,
+      });
 
       resetForm();
+
       refreshAll();
+
       alert("Product added successfully");
     } catch {
       alert("Failed to add");
@@ -136,104 +121,65 @@ export default function Products() {
     if (!window.confirm("Delete this product?")) return;
 
     try {
-      const res = await fetch(
-        `https://inventory-backend-final-1.onrender.com/api/products/${id}`,
-        {
-          method: "DELETE",
-        },
-      );
-
-      if (!res.ok) {
-        const txt = await res.text();
-
-        alert("DELETE FAILED:\n" + txt);
-
-        return;
-      }
+      await api.delete(`/products/${id}`);
 
       alert("Deleted Successfully");
 
       refreshAll();
-    } catch (e) {
-      console.log(e);
-
+    } catch {
       alert("Server error while deleting");
     }
   };
 
-  const handleDeactivate = async (id) => {
-    await fetch(
-      `https://inventory-backend-final-1.onrender.com/api/products/deactivate/${id}`,
-      {
-        method: "PUT",
-      },
-    );
+ const handleDeactivate = async (id) => {
 
-    refreshAll();
-  };
+  await api.put(`/products/deactivate/${id}`);
 
-  const handleActivate = async (id) => {
-    await fetch(
-      `https://inventory-backend-final-1.onrender.com/api/products/activate/${id}`,
-      {
-        method: "PUT",
-      },
-    );
+  refreshAll();
+};
 
-    refreshAll();
-  };
+ const handleActivate = async (id) => {
 
-  const handleApprove = async (p) => {
-    const price = prompt("Selling Price", p.price || 0);
+  await api.put(`/products/activate/${id}`);
 
-    if (price === null) return;
+  refreshAll();
+};
 
-    const mrp = prompt("MRP", p.mrp || 0);
+const handleApprove = async (p) => {
 
-    if (mrp === null) return;
+  const price = prompt("Selling Price", p.price || 0);
 
-    await fetch(
-      `https://inventory-backend-final-1.onrender.com/api/products/approve/${p.id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          price: Number(price),
-          mrp: Number(mrp),
-        }),
-      },
-    );
+  if (price === null) return;
 
-    refreshAll();
-  };
+  const mrp = prompt("MRP", p.mrp || 0);
 
-  const handlePrice = async (p) => {
-    const price = prompt("New Price", p.price || 0);
+  if (mrp === null) return;
 
-    if (price === null) return;
+  await api.put(`/products/approve/${p.id}`, {
+    price: Number(price),
+    mrp: Number(mrp),
+  });
 
-    const mrp = prompt("New MRP", p.mrp || 0);
+  refreshAll();
+};
 
-    if (mrp === null) return;
+const handlePrice = async (p) => {
 
-    await fetch(
-      `https://inventory-backend-final-1.onrender.com/api/products/price/${p.id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          price: Number(price),
-          mrp: Number(mrp),
-        }),
-      },
-    );
+  const price = prompt("New Price", p.price || 0);
 
-    refreshAll();
-  };
+  if (price === null) return;
+
+  const mrp = prompt("New MRP", p.mrp || 0);
+
+  if (mrp === null) return;
+
+  await api.put(`/products/price/${p.id}`, {
+    price: Number(price),
+    mrp: Number(mrp),
+  });
+
+  refreshAll();
+};
 
   const margin = (p) => {
     const sell = Number(p.price) || 0;
@@ -254,11 +200,7 @@ export default function Products() {
 
   const handleBarcodeResult = async (code) => {
     try {
-      const res = await fetch(
-        `https://inventory-backend-final-1.onrender.com/api/products/scan/${code}`,
-      );
-
-      const data = await res.json();
+      const data = await api.get(`/products/scan/${code}`);
 
       if (data.exists) {
         alert("Already exists in DB");

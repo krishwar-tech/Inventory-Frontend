@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+
+import Login from "./pages/Login";
+
 import Topbar from "./components/Topbar";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
@@ -13,7 +16,12 @@ import PendingProducts from "./components/PendingProducts";
 import Finance from "./components/Finance";
 
 function App() {
-  const [activePage, setActivePage] = useState("dashboard");
+  const token = localStorage.getItem("token");
+
+  const [activePage, setActivePage] = useState(
+    localStorage.getItem("activePage") || "dashboard"
+  );
+
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -29,35 +37,44 @@ function App() {
   }, []);
 
   const handlePageChange = (page) => {
+    localStorage.setItem("activePage", page);
+
     setActivePage(page);
+
     setMenuOpen(false);
   };
+
+  const logout = () => {
+    localStorage.clear();
+
+    window.location.href = "/";
+  };
+
+  if (!token) {
+    return <Login />;
+  }
 
   return (
     <>
       <div className="app-layout">
-        {/* TOPBAR */}
         <header className="mobile-topbar">
           <button className="menu-btn" onClick={() => setMenuOpen(true)}>
             ☰
           </button>
 
           <div className="topbar-holder">
-            <Topbar />
+            <Topbar logout={logout} />
           </div>
         </header>
 
-        {/* OVERLAY */}
         {menuOpen && (
           <div className="overlay" onClick={() => setMenuOpen(false)}></div>
         )}
 
-        {/* SIDEBAR */}
         <aside className={`sidebar-panel ${menuOpen ? "show" : ""}`}>
           <Sidebar activePage={activePage} setActivePage={handlePageChange} />
         </aside>
 
-        {/* MAIN */}
         <main className="main-content">
           {activePage === "dashboard" && <Dashboard />}
           {activePage === "billing" && <Billing />}
@@ -72,7 +89,6 @@ function App() {
         </main>
       </div>
 
-      {/* CSS */}
       <style>{`
         .app-layout{
           display:grid;
@@ -122,7 +138,6 @@ function App() {
           display:none;
         }
 
-        /* MOBILE */
         @media(max-width:768px){
 
           .app-layout{

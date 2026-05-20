@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import api from "../services/api";
 
 export default function Procurement() {
   const [products, setProducts] = useState([]);
@@ -39,26 +39,45 @@ export default function Procurement() {
   }, []);
 
   const loadProducts = async () => {
-    const res = await axios.get(
-      "https://inventory-backend-final-1.onrender.com/api/products",
-    );
-    setProducts(res.data);
+    try {
+      const data = await api.get("/products");
+
+      setProducts(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.log(err);
+
+      setProducts([]);
+    }
   };
 
   const loadSuppliers = async () => {
-    const res = await axios.get(
-      "https://inventory-backend-final-1.onrender.com/api/masters/suppliers",
-    );
-    setSuppliers(res.data);
+    try {
+      const data = await api.get("/masters/suppliers");
+
+      setSuppliers(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.log(err);
+
+      setSuppliers([]);
+    }
   };
 
   const loadLogs = async () => {
-    const res = await axios.get(
-      "https://inventory-backend-final-1.onrender.com/api/procurement",
-    );
-    const data = res.data.reverse();
-    setLogs(data);
-    calculateSummary(data);
+    try {
+      const data = await api.get("/procurement");
+
+      const reversed = Array.isArray(data)
+        ? [...data].reverse()
+        : [];
+
+      setLogs(reversed);
+
+      calculateSummary(reversed);
+    } catch (err) {
+      console.log(err);
+
+      setLogs([]);
+    }
   };
 
   const calculateSummary = (rows) => {
@@ -69,10 +88,14 @@ export default function Procurement() {
 
     rows.forEach((r) => {
       totalPurchase += Number(r.totalCost || 0);
+
       totalPaid += Number(r.paidAmount || 0);
+
       totalDue += Number(r.dueAmount || 0);
 
-      if (r.paymentStatus !== "PAID") unpaidCount++;
+      if (r.paymentStatus !== "PAID") {
+        unpaidCount++;
+      }
     });
 
     setSummary({
@@ -90,46 +113,57 @@ export default function Procurement() {
     });
   };
 
-  const addStock = async () => {
-    if (!form.productName || !form.supplier || !form.qty || !form.costPrice) {
-      alert("Fill required fields");
-      return;
-    }
-
-    const selectedProduct = products.find((p) => p.name === form.productName);
-
-    const selectedSupplier = suppliers.find((s) => s.name === form.supplier);
-
-    if (!selectedProduct || !selectedSupplier) {
-      alert("Invalid product or supplier");
-      return;
-    }
-
+  const createProcurement = async () => {
     try {
-      await axios.post(
-        "https://inventory-backend-final-1.onrender.com/api/procurement",
-        {
-          productId: selectedProduct.id,
-
-          supplierId: selectedSupplier.id,
-
-          qty: parseInt(form.qty),
-
-          costPrice: parseFloat(form.costPrice),
-        },
+      const selectedProduct = products.find(
+        (p) => p.name === form.productName
       );
+
+      const selectedSupplier = suppliers.find(
+        (s) => s.name === form.supplier
+      );
+
+      if (!selectedProduct) {
+        alert("Select Product");
+
+        return;
+      }
+
+      if (!selectedSupplier) {
+        alert("Select Supplier");
+
+        return;
+      }
+
+      await api.post("/procurement", {
+        productId: selectedProduct.id,
+
+        supplierId: selectedSupplier.id,
+
+        qty: parseInt(form.qty),
+
+        costPrice: parseFloat(form.costPrice),
+
+        paidAmount: parseFloat(form.paidAmount || 0),
+
+        poNumber: form.poNumber,
+
+        invoiceRef: form.invoiceRef,
+
+        remarks: form.remarks,
+      });
+
+      alert("Procurement Added");
 
       resetForm();
 
       loadLogs();
 
       loadProducts();
-
-      alert("Procurement Added Successfully");
     } catch (err) {
-      console.error(err);
+      console.log(err);
 
-      alert("Procurement failed");
+      alert("Failed to create procurement");
     }
   };
 
@@ -147,73 +181,104 @@ export default function Procurement() {
     });
   };
 
-  const uploadExcel = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const fd = new FormData();
-    fd.append("file", file);
-
+  const importExcel = async (e) => {
     try {
-      const res = await axios.post(
+      const file = e.target.files[0];
+
+      if (!file) return;
+
+      const fd = new FormData();
+
+      fd.append("file", file);
+
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(
         "https://inventory-backend-final-1.onrender.com/api/procurement/import-excel",
-        fd,
         {
+          method: "POST",
+
           headers: {
-            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
           },
-        },
+
+          body: fd,
+        }
       );
 
-      alert(
-        `${res.data.rowsImported} rows imported\n${res.data.newProducts} new products pending approval`,
-      );
+      const data = await res.json();
+
+      console.log(data);
+
+      alert("Excel Imported Successfully");
 
       loadLogs();
+
       loadProducts();
-    } catch (error) {
+    } catch (err) {
+      console.log(err);
+
       alert("Import failed");
     }
-
-    e.target.value = "";
   };
 
   const updatePayment = async (id) => {
-    const amt = prompt("Enter payment amount");
-    if (!amt) return;
+    try {
+      const amt = prompt("Enter payment amount");
 
-    await axios.put(
-      `https://inventory-backend-final-1.onrender.com/api/procurement/payment/${id}?amount=${amt}`,
-    );
+      if (!amt) return;
 
-    loadLogs();
+      await api.put(`/procurement/payment/${id}?amount=${amt}`);
+
+      alert("Payment Updated");
+
+      loadLogs();
+    } catch (err) {
+      console.log(err);
+
+      alert("Payment update failed");
+    }
   };
 
   const deleteRow = async (id) => {
-    if (!window.confirm("Delete this procurement entry?")) return;
+    try {
+      if (!window.confirm("Delete this procurement entry?")) return;
 
-    await axios.delete(
-      `https://inventory-backend-final-1.onrender.com/api/procurement/${id}`,
-    );
-    loadLogs();
+      await api.delete(`/procurement/${id}`);
+
+      alert("Deleted Successfully");
+
+      loadLogs();
+
+      loadProducts();
+    } catch (err) {
+      console.log(err);
+
+      alert("Delete failed");
+    }
   };
 
   const filteredLogs = logs.filter((l) => {
     const supplierOk =
       !filters.supplier ||
-      l.supplier?.toLowerCase().includes(filters.supplier.toLowerCase());
+      l.supplier
+        ?.toLowerCase()
+        .includes(filters.supplier.toLowerCase());
 
-    const statusOk = !filters.status || l.paymentStatus === filters.status;
+    const statusOk =
+      !filters.status ||
+      l.paymentStatus === filters.status;
 
     return supplierOk && statusOk;
   });
 
   const badgeColor = (status) => {
     if (status === "PAID") return "#16a34a";
+
     if (status === "PARTIAL") return "#d97706";
+
     return "#dc2626";
   };
-
   return (
     <>
       <style>{`
@@ -834,7 +899,7 @@ export default function Procurement() {
             ref={fileRef}
             style={{ display: "none" }}
             accept=".xlsx,.xls"
-            onChange={uploadExcel}
+            onChange={importExcel}
           />
         </div>
 
@@ -939,7 +1004,7 @@ export default function Procurement() {
           <button
             className="btn green"
             style={{ marginTop: 18 }}
-            onClick={addStock}
+            onClick={createProcurement}
           >
             + Save Procurement
           </button>

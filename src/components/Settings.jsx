@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-
+import api from "../services/api";
 function Settings() {
   const [form, setForm] = useState({
     safetyStock: 5,
@@ -9,16 +9,13 @@ function Settings() {
     currencySymbol: "₹",
   });
 
-  const API = "https://inventory-backend-final-1.onrender.com/api/settings";
-
   useEffect(() => {
     loadSettings();
   }, []);
 
   const loadSettings = async () => {
     try {
-      const res = await fetch(API);
-      const data = await res.json();
+      const data = await api.get("/settings");
 
       setForm({
         safetyStock: data.safetyStock || 5,
@@ -48,24 +45,17 @@ function Settings() {
 
     setForm(updated);
   };
-
   const saveSettings = async () => {
     try {
-      const res = await fetch(API, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
-      });
+      const data = await api.post("/settings", form);
 
-      const data = await res.json();
+      console.log(data);
 
-      setForm(data);
-      alert("Settings Saved Successfully");
+      alert("Settings Saved");
     } catch (error) {
       console.log(error);
-      alert("Failed to Save");
+
+      alert("Failed to save settings");
     }
   };
 
@@ -167,7 +157,8 @@ function Settings() {
           <span className="guide-text">Top 70% value</span>
 
           <span className="badge bclass">B</span>
-          <span className="guide-text">Next 20%</span><br></br>
+          <span className="guide-text">Next 20%</span>
+          <br></br>
 
           <span className="badge cclass">C</span>
           <span className="guide-text">Bottom 10%</span>

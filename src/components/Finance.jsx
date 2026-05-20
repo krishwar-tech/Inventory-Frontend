@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-
+import api from "../services/api";
 export default function Finance() {
 
   const [data, setData] = useState(null);
@@ -13,11 +12,9 @@ export default function Finance() {
   const loadFinance = async () => {
     try {
 
-      const res = await axios.get(
-        "https://inventory-backend-final-1.onrender.com/api/finance/dashboard"
-      );
+      const res = await api.get("/finance/dashboard");
 
-      setData(res.data);
+      setData(res);
 
     } catch (error) {
       console.log(error);
@@ -69,10 +66,6 @@ export default function Finance() {
           color:var(--muted);
           margin-bottom:22px;
         }
-
-        /* =========================
-           TOP GRID
-        ========================= */
 
         .finance-grid{
           display:grid;
@@ -168,9 +161,6 @@ export default function Finance() {
           color:#ef4444;
         }
 
-        /* =========================
-           PANELS
-        ========================= */
 
         .finance-panels{
           display:grid;
@@ -197,9 +187,6 @@ export default function Finance() {
           margin-bottom:18px;
         }
 
-        /* =========================
-           ROWS
-        ========================= */
 
         .finance-row{
           display:flex;
@@ -256,9 +243,6 @@ export default function Finance() {
           font-weight:800;
         }
 
-        /* =========================
-           RESPONSIVE
-        ========================= */
 
         @media(max-width:1200px){
 
@@ -310,10 +294,6 @@ export default function Finance() {
         <div className="finance-sub">
           Real-time money movement and business overview
         </div>
-
-        {/* =========================
-            TOP CARDS
-        ========================= */}
 
         <div className="finance-grid">
 
@@ -460,10 +440,6 @@ export default function Finance() {
           </div>
 
         </div>
-
-        {/* =========================
-            PANELS
-        ========================= */}
 
         <div className="finance-panels">
 

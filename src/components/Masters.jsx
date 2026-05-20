@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
+import api from "../services/api";
 
 function Masters() {
-  const API = "https://inventory-backend-final-1.onrender.com/api/masters";
-
   const [suppliers, setSuppliers] = useState([]);
   const [categories, setCategories] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -17,13 +16,17 @@ function Masters() {
 
   const loadAll = async () => {
     try {
-      const s = await fetch(`${API}/suppliers`);
-      const c = await fetch(`${API}/categories`);
-      const cu = await fetch(`${API}/customers`);
+      const s = await api.get("/masters/suppliers");
 
-      setSuppliers(await s.json());
-      setCategories(await c.json());
-      setCustomers(await cu.json());
+      const c = await api.get("/masters/categories");
+
+      const cu = await api.get("/masters/customers");
+
+      setSuppliers(s);
+
+      setCategories(c);
+
+      setCustomers(cu);
     } catch (err) {
       console.log(err);
     }
@@ -32,72 +35,53 @@ function Masters() {
   const addSupplier = async () => {
     if (!supplierName.trim()) return;
 
-    await fetch(`${API}/suppliers`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: supplierName,
-      }),
+    await api.post("/masters/suppliers", {
+      name: supplierName,
     });
 
     setSupplierName("");
+
     loadAll();
   };
 
   const addCategory = async () => {
     if (!categoryName.trim()) return;
 
-    await fetch(`${API}/categories`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: categoryName,
-      }),
+    await api.post("/masters/categories", {
+      name: categoryName,
     });
 
     setCategoryName("");
+
     loadAll();
   };
-
   const addCustomer = async () => {
     if (!customerName.trim()) return;
 
-    await fetch(`${API}/customers`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: customerName,
-      }),
+    await api.post("/masters/customers", {
+      name: customerName,
     });
 
     setCustomerName("");
+
     loadAll();
   };
 
   const deleteSupplier = async (id) => {
-    await fetch(`${API}/suppliers/${id}`, {
-      method: "DELETE",
-    });
+    await api.delete(`/masters/suppliers/${id}`);
+
     loadAll();
   };
 
   const deleteCategory = async (id) => {
-    await fetch(`${API}/categories/${id}`, {
-      method: "DELETE",
-    });
+    await api.delete(`/masters/categories/${id}`);
+
     loadAll();
   };
 
   const deleteCustomer = async (id) => {
-    await fetch(`${API}/customers/${id}`, {
-      method: "DELETE",
-    });
+    await api.delete(`/masters/customers/${id}`);
+
     loadAll();
   };
 
@@ -131,14 +115,11 @@ function Masters() {
       </div>
 
       <div className="masters-grid">
-
         {/* SUPPLIERS */}
         <div className="master-card">
           <div className="master-head">🚚 Suppliers</div>
 
-          <div className="mini-text">
-            {suppliers.length} Active Suppliers
-          </div>
+          <div className="mini-text">{suppliers.length} Active Suppliers</div>
 
           <div className="master-add">
             <input
@@ -244,9 +225,7 @@ function Masters() {
                 </div>
               ))
             ) : (
-              <div className="empty-state">
-                No customers added yet
-              </div>
+              <div className="empty-state">No customers added yet</div>
             )}
           </div>
         </div>
