@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../services/api";
 export default function Finance() {
-
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -11,14 +10,13 @@ export default function Finance() {
 
   const loadFinance = async () => {
     try {
-
       const res = await api.get("/finance/dashboard");
 
-      setData(res);
+      setData(res.data);
 
+      setData(res.data);
     } catch (error) {
       console.log(error);
-
     } finally {
       setLoading(false);
     }
@@ -286,140 +284,81 @@ export default function Finance() {
       `}</style>
 
       <div className="finance-page">
-
-        <div className="finance-title">
-          Finance
-        </div>
+        <div className="finance-title">Finance</div>
 
         <div className="finance-sub">
           Real-time money movement and business overview
         </div>
 
         <div className="finance-grid">
-
           <div className="finance-card">
+            <div className="finance-label">💰 Today Sales</div>
 
-            <div className="finance-label">
-              💰 Today Sales
-            </div>
+            <div className="finance-value blue">{money(data.todaySales)}</div>
 
-            <div className="finance-value blue">
-              {money(data.todaySales)}
-            </div>
-
-            <div className="finance-trend blue">
-              +12% from yesterday
-            </div>
-
+            <div className="finance-trend blue">+12% from yesterday</div>
           </div>
 
           <div className="finance-card">
+            <div className="finance-label">📈 Total Sales</div>
 
-            <div className="finance-label">
-              📈 Total Sales
-            </div>
+            <div className="finance-value green">{money(data.totalSales)}</div>
 
-            <div className="finance-value green">
-              {money(data.totalSales)}
-            </div>
-
-            <div className="finance-trend green">
-              Strong sales growth
-            </div>
-
+            <div className="finance-trend green">Strong sales growth</div>
           </div>
 
           <div className="finance-card">
+            <div className="finance-label">🟠 Receivable</div>
 
-            <div className="finance-label">
-              🟠 Receivable
-            </div>
+            <div className="finance-value orange">{money(data.receivable)}</div>
 
-            <div className="finance-value orange">
-              {money(data.receivable)}
-            </div>
-
-            <div className="finance-trend orange">
-              Pending collections
-            </div>
-
+            <div className="finance-trend orange">Pending collections</div>
           </div>
 
           <div className="finance-card">
+            <div className="finance-label">🔴 Payable</div>
 
-            <div className="finance-label">
-              🔴 Payable
-            </div>
+            <div className="finance-value red">{money(data.payable)}</div>
 
-            <div className="finance-value red">
-              {money(data.payable)}
-            </div>
-
-            <div className="finance-trend red">
-              Supplier payments pending
-            </div>
-
+            <div className="finance-trend red">Supplier payments pending</div>
           </div>
 
           <div className="finance-card">
-
-            <div className="finance-label">
-              💵 Cash Collected
-            </div>
+            <div className="finance-label">💵 Cash Collected</div>
 
             <div className="finance-value green">
               {money(data.cashCollected)}
             </div>
 
-            <div className="finance-trend green">
-              Most used payment mode
-            </div>
-
+            <div className="finance-trend green">Most used payment mode</div>
           </div>
 
           <div className="finance-card">
-
-            <div className="finance-label">
-              🏦 UPI Collected
-            </div>
+            <div className="finance-label">🏦 UPI Collected</div>
 
             <div className="finance-value green">
               {money(data.upiCollected)}
             </div>
 
-            <div className="finance-trend green">
-              Digital payments active
-            </div>
-
+            <div className="finance-trend green">Digital payments active</div>
           </div>
 
           <div className="finance-card">
-
-            <div className="finance-label">
-              💳 Card Collected
-            </div>
+            <div className="finance-label">💳 Card Collected</div>
 
             <div className="finance-value green">
               {money(data.cardCollected)}
             </div>
 
-            <div className="finance-trend green">
-              Card usage minimal
-            </div>
-
+            <div className="finance-trend green">Card usage minimal</div>
           </div>
 
           <div className="finance-card">
-
-            <div className="finance-label">
-              📊 Net Business
-            </div>
+            <div className="finance-label">📊 Net Business</div>
 
             <div
               className={`finance-value ${
-                data.netBusiness >= 0
-                  ? "green"
-                  : "red"
+                data.netBusiness >= 0 ? "green" : "red"
               }`}
             >
               {money(data.netBusiness)}
@@ -427,32 +366,23 @@ export default function Finance() {
 
             <div
               className={`finance-trend ${
-                data.netBusiness >= 0
-                  ? "green"
-                  : "red"
+                data.netBusiness >= 0 ? "green" : "red"
               }`}
             >
               {data.netBusiness >= 0
                 ? "Business in profit"
                 : "Expenses higher than revenue"}
             </div>
-
           </div>
-
         </div>
 
         <div className="finance-panels">
-
           {/* COLLECTIONS */}
 
           <div className="finance-panel">
-
-            <div className="panel-title">
-              💰 Collections Breakdown
-            </div>
+            <div className="panel-title">💰 Collections Breakdown</div>
 
             <div className="finance-row">
-
               <div className="finance-left">
                 <div className="dot dot-green"></div>
                 Cash
@@ -461,11 +391,9 @@ export default function Finance() {
               <div className="finance-amount green">
                 {money(data.cashCollected)}
               </div>
-
             </div>
 
             <div className="finance-row">
-
               <div className="finance-left">
                 <div className="dot dot-blue"></div>
                 UPI
@@ -474,11 +402,9 @@ export default function Finance() {
               <div className="finance-amount blue">
                 {money(data.upiCollected)}
               </div>
-
             </div>
 
             <div className="finance-row">
-
               <div className="finance-left">
                 <div className="dot dot-orange"></div>
                 Card
@@ -487,11 +413,9 @@ export default function Finance() {
               <div className="finance-amount orange">
                 {money(data.cardCollected)}
               </div>
-
             </div>
 
             <div className="finance-row">
-
               <div className="finance-left">
                 <div className="dot dot-green"></div>
                 Total
@@ -499,39 +423,27 @@ export default function Finance() {
 
               <div className="finance-amount green">
                 {money(
-                  data.cashCollected +
-                  data.upiCollected +
-                  data.cardCollected
+                  data.cashCollected + data.upiCollected + data.cardCollected,
                 )}
               </div>
-
             </div>
-
           </div>
 
           {/* SNAPSHOT */}
 
           <div className="finance-panel">
-
-            <div className="panel-title">
-              📈 Business Snapshot
-            </div>
+            <div className="panel-title">📈 Business Snapshot</div>
 
             <div className="finance-row">
-
               <div className="finance-left">
                 <div className="dot dot-blue"></div>
                 Purchase Cost
               </div>
 
-              <div className="finance-amount">
-                {money(data.totalPurchase)}
-              </div>
-
+              <div className="finance-amount">{money(data.totalPurchase)}</div>
             </div>
 
             <div className="finance-row">
-
               <div className="finance-left">
                 <div className="dot dot-orange"></div>
                 Pending Customer Due
@@ -540,24 +452,18 @@ export default function Finance() {
               <div className="finance-amount orange">
                 {money(data.receivable)}
               </div>
-
             </div>
 
             <div className="finance-row">
-
               <div className="finance-left">
                 <div className="dot dot-red"></div>
                 Supplier Due
               </div>
 
-              <div className="finance-amount red">
-                {money(data.payable)}
-              </div>
-
+              <div className="finance-amount red">{money(data.payable)}</div>
             </div>
 
             <div className="finance-row">
-
               <div className="finance-left">
                 <div className="dot dot-green"></div>
                 Net Result
@@ -565,20 +471,14 @@ export default function Finance() {
 
               <div
                 className={`finance-amount ${
-                  data.netBusiness >= 0
-                    ? "green"
-                    : "red"
+                  data.netBusiness >= 0 ? "green" : "red"
                 }`}
               >
                 {money(data.netBusiness)}
               </div>
-
             </div>
-
           </div>
-
         </div>
-
       </div>
     </>
   );

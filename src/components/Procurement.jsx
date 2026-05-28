@@ -32,17 +32,23 @@ export default function Procurement() {
     status: "",
   });
 
+  const refreshAll = async () => {
+    await loadProducts();
+
+    await loadSuppliers();
+
+    await loadLogs();
+  };
+
   useEffect(() => {
-    loadProducts();
-    loadSuppliers();
-    loadLogs();
+    refreshAll();
   }, []);
 
   const loadProducts = async () => {
     try {
       const data = await api.get("/products");
 
-      setProducts(Array.isArray(data) ? data : []);
+      setProducts(Array.isArray(data.data) ? data.data : []);
     } catch (err) {
       console.log(err);
 
@@ -53,8 +59,7 @@ export default function Procurement() {
   const loadSuppliers = async () => {
     try {
       const data = await api.get("/masters/suppliers");
-
-      setSuppliers(Array.isArray(data) ? data : []);
+      setSuppliers(Array.isArray(data.data) ? data.data : []);
     } catch (err) {
       console.log(err);
 
@@ -65,10 +70,7 @@ export default function Procurement() {
   const loadLogs = async () => {
     try {
       const data = await api.get("/procurement");
-
-      const reversed = Array.isArray(data)
-        ? [...data].reverse()
-        : [];
+      const reversed = Array.isArray(data.data) ? [...data.data].reverse() : [];
 
       setLogs(reversed);
 
@@ -115,13 +117,9 @@ export default function Procurement() {
 
   const createProcurement = async () => {
     try {
-      const selectedProduct = products.find(
-        (p) => p.name === form.productName
-      );
+      const selectedProduct = products.find((p) => p.name === form.productName);
 
-      const selectedSupplier = suppliers.find(
-        (s) => s.name === form.supplier
-      );
+      const selectedSupplier = suppliers.find((s) => s.name === form.supplier);
 
       if (!selectedProduct) {
         alert("Select Product");
@@ -157,9 +155,7 @@ export default function Procurement() {
 
       resetForm();
 
-      loadLogs();
-
-      loadProducts();
+      await refreshAll();
     } catch (err) {
       console.log(err);
 
@@ -203,7 +199,7 @@ export default function Procurement() {
           },
 
           body: fd,
-        }
+        },
       );
 
       const data = await res.json();
@@ -212,9 +208,7 @@ export default function Procurement() {
 
       alert("Excel Imported Successfully");
 
-      loadLogs();
-
-      loadProducts();
+      await refreshAll();
     } catch (err) {
       console.log(err);
 
@@ -232,7 +226,7 @@ export default function Procurement() {
 
       alert("Payment Updated");
 
-      loadLogs();
+      await refreshAll();
     } catch (err) {
       console.log(err);
 
@@ -248,9 +242,7 @@ export default function Procurement() {
 
       alert("Deleted Successfully");
 
-      loadLogs();
-
-      loadProducts();
+      await refreshAll();
     } catch (err) {
       console.log(err);
 
@@ -261,13 +253,9 @@ export default function Procurement() {
   const filteredLogs = logs.filter((l) => {
     const supplierOk =
       !filters.supplier ||
-      l.supplier
-        ?.toLowerCase()
-        .includes(filters.supplier.toLowerCase());
+      l.supplier?.toLowerCase().includes(filters.supplier.toLowerCase());
 
-    const statusOk =
-      !filters.status ||
-      l.paymentStatus === filters.status;
+    const statusOk = !filters.status || l.paymentStatus === filters.status;
 
     return supplierOk && statusOk;
   });

@@ -39,17 +39,17 @@ function Topbar({ logout }) {
   // LOW STOCK FUNCTION
   const loadLowStock = async () => {
     try {
-      const data = await api.get("/products");
+      const res = await api.get("/products");
 
-      if (Array.isArray(data)) {
-        const lowStock = data.filter(
-          (item) => Number(item.stockQuantity || item.stock || 0) < 10,
-        );
+      const products = res.data || [];
 
-        setLowStockCount(lowStock.length);
-      } else {
-        setLowStockCount(0);
-      }
+      const lowStock = products.filter(
+        (item) =>
+          Number(item.stockQuantity || item.stock || 0) <=
+          Number(item.reorderLevel || 10),
+      );
+
+      setLowStockCount(lowStock.length);
     } catch (error) {
       console.log(error);
 
@@ -70,9 +70,7 @@ function Topbar({ logout }) {
   };
 
   const applyDashboardTheme = () => {
-    const cards = document.querySelectorAll(
-      ".stat-card,.dashboard-card,.card",
-    );
+    const cards = document.querySelectorAll(".stat-card,.dashboard-card,.card");
 
     const dashboard = document.querySelector(".dashboard-section");
 
@@ -284,9 +282,7 @@ function Topbar({ logout }) {
             {darkMode ? "🌙 Dark" : "☀ Light"}
           </button>
 
-          <div className="stock-alert">
-            ⚠ {lowStockCount} Low Stock
-          </div>
+          <div className="stock-alert">⚠ {lowStockCount} Low Stock</div>
 
           <button className="logout-btn" onClick={logout}>
             Logout

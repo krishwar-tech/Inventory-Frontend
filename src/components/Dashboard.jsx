@@ -72,7 +72,9 @@ function Dashboard() {
 
   const loadDashboard = async () => {
     try {
-      const data = await api.get("/reports/dashboard");
+      const res = await api.get("/reports/dashboard");
+
+      const data = res.data;
 
       setStats({
         totalProducts: data.totalProducts || 0,

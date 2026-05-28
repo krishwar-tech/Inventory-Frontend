@@ -20,7 +20,8 @@ export default function Inventory() {
   const loadProducts = async () => {
     try {
       const res = await api.get("/inventory");
-      setProducts(res);
+
+      setProducts(res.data);
     } catch (err) {
       console.log(err);
     }
@@ -29,7 +30,9 @@ export default function Inventory() {
   const loadHistory = async () => {
     try {
       const res = await api.get("/inventory/history");
-      setHistory(res);
+
+setHistory(res.data);
+      setHistory(res.data);
     } catch (err) {
       console.log(err);
     }

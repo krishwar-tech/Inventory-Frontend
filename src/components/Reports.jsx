@@ -26,55 +26,51 @@ function Reports() {
     loadReports();
   }, []);
 
- const loadReports = async () => {
+  const loadReports = async () => {
+    try {
+      const res = await api.get("/reports/dashboard");
 
-  try {
+      const json = res.data;
 
-    const json = await api.get("/reports/dashboard");
-
-    setData({
-      totalRevenue: json.totalRevenue || 0,
-      unitsSold: json.unitsSold || 0,
-      transactions: json.transactions || 0,
-      salesRows: json.salesRows || [],
-      totalPurchase: json.totalPurchase || 0,
-      unitsPurchased: json.unitsPurchased || 0,
-      purchaseRows: json.purchaseRows || [],
-      lowStockCount: json.lowStockCount || 0,
-      lowStock: json.lowStock || [],
-    });
-
-  } catch (err) {
-
-    console.log(err);
-
-  } finally {
-
-    setLoading(false);
-  }
-};
+      setData({
+        totalRevenue: json.totalRevenue || 0,
+        unitsSold: json.unitsSold || 0,
+        transactions: json.transactions || 0,
+        salesRows: json.salesRows || [],
+        totalPurchase: json.totalPurchase || 0,
+        unitsPurchased: json.unitsPurchased || 0,
+        purchaseRows: json.purchaseRows || [],
+        lowStockCount: json.lowStockCount || 0,
+        lowStock: json.lowStock || [],
+      });
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const money = (n) => `₹${Number(n || 0).toFixed(2)}`;
 
- const previewInvoice = async (saleId) => {
+  const previewInvoice = async (saleId) => {
+    try {
+      const res = await api.get(`/billing/invoice/${saleId}`);
 
-  try {
+      const json = res.data;
 
-    const json = await api.get(`/billing/invoice/${saleId}`);
+      setInvoice(json);
 
-    setInvoice(json);
-
-    setShowInvoice(true);
-
-  } catch (err) {
-
-    console.log(err);
-  }
-};
+      setShowInvoice(true);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const downloadPdf = async (saleId) => {
     try {
-      const json = await api.get(`/billing/invoice/${saleId}`);
+      const res = await api.get(`/billing/invoice/${saleId}`);
+
+      const json = res.data;
 
       const doc = new jsPDF();
 
@@ -289,37 +285,26 @@ function Reports() {
         {tab === "sales" && (
           <>
             <div style={styles.cards} className="report-cards">
-
               <Card
                 title="Total Revenue"
                 value={money(data.totalRevenue)}
                 type="green"
               />
 
-              <Card
-                title="Units Sold"
-                value={data.unitsSold}
-                type="blue"
-              />
+              <Card title="Units Sold" value={data.unitsSold} type="blue" />
 
               <Card
                 title="Transactions"
                 value={data.transactions}
                 type="orange"
               />
-
             </div>
 
             <div style={styles.box} className="report-box">
-
-              <h3 style={styles.boxTitle}>
-                SALES TRANSACTIONS
-              </h3>
+              <h3 style={styles.boxTitle}>SALES TRANSACTIONS</h3>
 
               <div className="table-wrap">
-
                 <table style={styles.table} className="report-table">
-
                   <thead>
                     <tr>
                       <th style={styles.th}>BILL NO</th>
@@ -331,11 +316,8 @@ function Reports() {
                   </thead>
 
                   <tbody>
-
                     {data.salesRows.map((item, i) => (
-
                       <tr key={i}>
-
                         <td style={styles.td}>{item.billNo}</td>
 
                         <td style={styles.td}>{item.paymentMode}</td>
@@ -355,14 +337,12 @@ function Reports() {
                         </td>
 
                         <td style={styles.td}>
-
                           <div
                             style={{
                               display: "flex",
                               gap: "8px",
                             }}
                           >
-
                             <button
                               className="view-btn-hover"
                               style={styles.viewBtn}
@@ -378,21 +358,13 @@ function Reports() {
                             >
                               ⬇
                             </button>
-
                           </div>
-
                         </td>
-
                       </tr>
-
                     ))}
-
                   </tbody>
-
                 </table>
-
               </div>
-
             </div>
           </>
         )}
@@ -400,7 +372,6 @@ function Reports() {
         {tab === "purchase" && (
           <>
             <div style={styles.cards} className="report-cards">
-
               <Card
                 title="Total Procurement Cost"
                 value={money(data.totalPurchase)}
@@ -418,19 +389,13 @@ function Reports() {
                 value={data.purchaseRows.length}
                 type="orange"
               />
-
             </div>
 
             <div style={styles.box} className="report-box">
-
-              <h3 style={styles.boxTitle}>
-                PURCHASE TRANSACTIONS
-              </h3>
+              <h3 style={styles.boxTitle}>PURCHASE TRANSACTIONS</h3>
 
               <div className="table-wrap">
-
                 <table style={styles.table} className="report-table">
-
                   <thead>
                     <tr>
                       <th style={styles.th}>PRODUCT</th>
@@ -443,44 +408,31 @@ function Reports() {
                   </thead>
 
                   <tbody>
-
                     {data.purchaseRows.map((item, i) => (
-
                       <tr key={i}>
-
                         <td style={styles.td}>{item.productName}</td>
                         <td style={styles.td}>{item.supplier}</td>
                         <td style={styles.td}>{item.qty}</td>
                         <td style={styles.td}>{money(item.costPrice)}</td>
                         <td style={styles.td}>{money(item.totalCost)}</td>
                         <td style={styles.td}>{item.date}</td>
-
                       </tr>
-
                     ))}
-
                   </tbody>
-
                 </table>
-
               </div>
-
             </div>
           </>
         )}
 
         {tab === "low" && (
-
           <div style={styles.box} className="report-box">
-
             <h3 style={styles.boxTitle}>
               🔴 LOW STOCK REPORT — {data.lowStockCount} PRODUCTS NEED ATTENTION
             </h3>
 
             <div className="table-wrap">
-
               <table style={styles.table} className="report-table">
-
                 <thead>
                   <tr>
                     <th style={styles.th}>PRODUCT</th>
@@ -492,11 +444,8 @@ function Reports() {
                 </thead>
 
                 <tbody>
-
                   {data.lowStock.map((item, i) => (
-
                     <tr key={i}>
-
                       <td style={styles.td}>{item.name}</td>
 
                       <td style={styles.td}>{item.sku}</td>
@@ -511,12 +460,9 @@ function Reports() {
                         {item.stock}
                       </td>
 
-                      <td style={styles.td}>
-                        {item.reorderLevel}
-                      </td>
+                      <td style={styles.td}>{item.reorderLevel}</td>
 
                       <td style={styles.td}>
-
                         <span
                           style={
                             item.status === "CRITICAL"
@@ -526,36 +472,22 @@ function Reports() {
                         >
                           {item.status}
                         </span>
-
                       </td>
-
                     </tr>
-
                   ))}
-
                 </tbody>
-
               </table>
-
             </div>
-
           </div>
-
         )}
 
         {showInvoice && invoice && (
-
-          <div
-            style={styles.overlay}
-            onClick={() => setShowInvoice(false)}
-          >
-
+          <div style={styles.overlay} onClick={() => setShowInvoice(false)}>
             <div
               style={styles.modal}
               className="invoice-modal"
               onClick={(e) => e.stopPropagation()}
             >
-
               <h2>StockFlow Invoice</h2>
 
               <p>
@@ -563,8 +495,7 @@ function Reports() {
               </p>
 
               <p>
-                <b>Date:</b>{" "}
-                {invoice.sale.createdAt.replace("T", " ")}
+                <b>Date:</b> {invoice.sale.createdAt.replace("T", " ")}
               </p>
 
               <p>
@@ -574,24 +505,18 @@ function Reports() {
               <hr />
 
               {invoice.items.map((item, i) => (
-
                 <div key={i} style={styles.row}>
-
                   <span>
                     {item.productName} x {item.qty}
                   </span>
 
                   <span>{money(item.total)}</span>
-
                 </div>
-
               ))}
 
               <hr />
 
-              <h3>
-                Total: {money(invoice.sale.totalAmount)}
-              </h3>
+              <h3>Total: {money(invoice.sale.totalAmount)}</h3>
 
               <button
                 style={styles.closeBtn}
@@ -599,11 +524,8 @@ function Reports() {
               >
                 Close
               </button>
-
             </div>
-
           </div>
-
         )}
       </div>
     </>
@@ -611,7 +533,6 @@ function Reports() {
 }
 
 function Card({ title, value, type }) {
-
   const getColor = () => {
     if (type === "green") return "#16a34a";
     if (type === "red") return "#dc2626";
@@ -629,12 +550,7 @@ function Card({ title, value, type }) {
   };
 
   return (
-
-    <div
-      style={styles.card}
-      className="report-card"
-    >
-
+    <div style={styles.card} className="report-card">
       <div
         style={{
           position: "absolute",
@@ -672,9 +588,7 @@ function Card({ title, value, type }) {
         {getIcon()}
       </div>
 
-      <p style={styles.cardTitle}>
-        {title}
-      </p>
+      <p style={styles.cardTitle}>{title}</p>
 
       <h2
         style={{
@@ -702,14 +616,11 @@ function Card({ title, value, type }) {
       >
         ↑ 12% This Week
       </div>
-
     </div>
-
   );
 }
 
 const styles = {
-
   page: {
     padding: "30px",
     background: "var(--bg)",

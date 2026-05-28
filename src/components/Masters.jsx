@@ -22,11 +22,11 @@ function Masters() {
 
       const cu = await api.get("/masters/customers");
 
-      setSuppliers(s);
+      setSuppliers(s.data);
 
-      setCategories(c);
+      setCategories(c.data);
 
-      setCustomers(cu);
+      setCustomers(cu.data);
     } catch (err) {
       console.log(err);
     }
@@ -35,56 +35,76 @@ function Masters() {
   const addSupplier = async () => {
     if (!supplierName.trim()) return;
 
-    await api.post("/masters/suppliers", {
-      name: supplierName,
-    });
+    try {
+      await api.post("/masters/suppliers", {
+        name: supplierName,
+      });
 
-    setSupplierName("");
+      setSupplierName("");
 
-    loadAll();
+      await loadAll();
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const addCategory = async () => {
     if (!categoryName.trim()) return;
 
-    await api.post("/masters/categories", {
-      name: categoryName,
-    });
+    try {
+      await api.post("/masters/categories", {
+        name: categoryName,
+      });
 
-    setCategoryName("");
+      setCategoryName("");
 
-    loadAll();
+      await loadAll();
+    } catch (err) {
+      console.log(err);
+    }
   };
   const addCustomer = async () => {
     if (!customerName.trim()) return;
 
-    await api.post("/masters/customers", {
-      name: customerName,
-    });
+    try {
+      await api.post("/masters/customers", {
+        name: customerName,
+      });
 
-    setCustomerName("");
+      setCustomerName("");
 
-    loadAll();
+      await loadAll();
+    } catch (err) {
+      console.log(err);
+    }
   };
-
   const deleteSupplier = async (id) => {
-    await api.delete(`/masters/suppliers/${id}`);
+    try {
+      await api.delete(`/masters/suppliers/${id}`);
 
-    loadAll();
+      await loadAll();
+    } catch (err) {
+      console.log(err);
+    }
   };
-
   const deleteCategory = async (id) => {
-    await api.delete(`/masters/categories/${id}`);
+    try {
+      await api.delete(`/masters/categories/${id}`);
 
-    loadAll();
+      await loadAll();
+    } catch (err) {
+      console.log(err);
+    }
   };
-
   const deleteCustomer = async (id) => {
-    await api.delete(`/masters/customers/${id}`);
+    try {
+      await api.delete(`/masters/customers/${id}`);
 
-    loadAll();
+      await loadAll();
+    } catch (err) {
+      console.log(err);
+    }
   };
-
   return (
     <section className="section active">
       <div className="page-title">Masters</div>

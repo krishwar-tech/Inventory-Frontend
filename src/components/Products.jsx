@@ -32,8 +32,7 @@ export default function Products() {
   const loadProducts = async () => {
     try {
       const data = await api.get("/products");
-
-      setProducts(Array.isArray(data) ? data : []);
+      setProducts(Array.isArray(data.data) ? data.data : []);
     } catch {
       setProducts([]);
     }
@@ -41,7 +40,9 @@ export default function Products() {
 
   const loadStats = async () => {
     try {
-      const data = await api.get("/products/stats");
+      const res = await api.get("/products/stats");
+
+      setStats(res.data);
 
       setStats(data);
     } catch {}
@@ -49,10 +50,14 @@ export default function Products() {
 
   const loadCategories = async () => {
     try {
-      const data = await api.get("/masters/categories");
+      const res = await api.get("/masters/categories");
 
-      setCategories(Array.isArray(data) ? data : []);
-    } catch {
+      console.log(res);
+
+      setCategories(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.log(err);
+
       setCategories([]);
     }
   };
@@ -131,55 +136,51 @@ export default function Products() {
     }
   };
 
- const handleDeactivate = async (id) => {
+  const handleDeactivate = async (id) => {
+    await api.put(`/products/deactivate/${id}`);
 
-  await api.put(`/products/deactivate/${id}`);
+    refreshAll();
+  };
 
-  refreshAll();
-};
+  const handleActivate = async (id) => {
+    await api.put(`/products/activate/${id}`);
 
- const handleActivate = async (id) => {
+    refreshAll();
+  };
 
-  await api.put(`/products/activate/${id}`);
+  const handleApprove = async (p) => {
+    const price = prompt("Selling Price", p.price || 0);
 
-  refreshAll();
-};
+    if (price === null) return;
 
-const handleApprove = async (p) => {
+    const mrp = prompt("MRP", p.mrp || 0);
 
-  const price = prompt("Selling Price", p.price || 0);
+    if (mrp === null) return;
 
-  if (price === null) return;
+    await api.put(`/products/approve/${p.id}`, {
+      price: Number(price),
+      mrp: Number(mrp),
+    });
 
-  const mrp = prompt("MRP", p.mrp || 0);
+    refreshAll();
+  };
 
-  if (mrp === null) return;
+  const handlePrice = async (p) => {
+    const price = prompt("New Price", p.price || 0);
 
-  await api.put(`/products/approve/${p.id}`, {
-    price: Number(price),
-    mrp: Number(mrp),
-  });
+    if (price === null) return;
 
-  refreshAll();
-};
+    const mrp = prompt("New MRP", p.mrp || 0);
 
-const handlePrice = async (p) => {
+    if (mrp === null) return;
 
-  const price = prompt("New Price", p.price || 0);
+    await api.put(`/products/price/${p.id}`, {
+      price: Number(price),
+      mrp: Number(mrp),
+    });
 
-  if (price === null) return;
-
-  const mrp = prompt("New MRP", p.mrp || 0);
-
-  if (mrp === null) return;
-
-  await api.put(`/products/price/${p.id}`, {
-    price: Number(price),
-    mrp: Number(mrp),
-  });
-
-  refreshAll();
-};
+    refreshAll();
+  };
 
   const margin = (p) => {
     const sell = Number(p.price) || 0;

@@ -13,7 +13,7 @@ export default function Billing() {
 
   const [discount, setDiscount] = useState(0);
 
-  const [paymentMode, setPaymentMode] = useState("Cash");
+  const [paymentMode, setPaymentMode] = useState("CASH");
 
   const [cashPaid, setCashPaid] = useState(0);
 
@@ -36,8 +36,9 @@ export default function Billing() {
 
     try {
       const clean = code.trim();
+      const res = await api.get(`/products/scan/${clean}`);
 
-      const data = await api.get(`/products/scan/${clean}`);
+      const data = res.data;
 
       if (data.exists && data.product) {
         const product = data.product;
@@ -134,7 +135,7 @@ export default function Billing() {
 
     setCardPaid(0);
 
-    setPaymentMode("Cash");
+   setPaymentMode("CASH");
   };
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
@@ -165,21 +166,14 @@ export default function Billing() {
     }
 
     try {
-      const response = await api.post("/billing/checkout", {
+      const res = await api.post("/billing/checkout", {
         customerName: "Walk-in Customer",
-
         customerMobile: "",
-
         paymentMode,
-
         discount: safeDiscount,
-
         cashPaid,
-
         upiPaid,
-
         cardPaid,
-
         items: cart.map((x) => ({
           productId: x.id,
           qty: x.qty,
@@ -187,7 +181,7 @@ export default function Billing() {
         })),
       });
 
-      console.log(response);
+      console.log(res);
 
       alert("Billing completed successfully");
 
@@ -852,14 +846,14 @@ export default function Billing() {
                 value={paymentMode}
                 onChange={(e) => setPaymentMode(e.target.value)}
               >
-                <option>Cash</option>
-                <option>UPI</option>
-                <option>Card</option>
-                <option>Split</option>
+                <option value="CASH">Cash</option>
+                <option value="UPI">UPI</option>
+                <option value="CARD">Card</option>
+                <option value="MIXED">Split</option>
               </select>
             </div>
 
-            {(paymentMode === "Cash" || paymentMode === "Split") && (
+           {(paymentMode === "CASH" || paymentMode === "MIXED") && (
               <div className="row">
                 <span>Cash</span>
 
@@ -870,8 +864,7 @@ export default function Billing() {
                 />
               </div>
             )}
-
-            {(paymentMode === "UPI" || paymentMode === "Split") && (
+              {(paymentMode === "UPI" || paymentMode === "MIXED") && (
               <div className="row">
                 <span>UPI</span>
 
@@ -882,8 +875,7 @@ export default function Billing() {
                 />
               </div>
             )}
-
-            {(paymentMode === "Card" || paymentMode === "Split") && (
+              {(paymentMode === "CARD" || paymentMode === "MIXED") && (
               <div className="row">
                 <span>Card</span>
 

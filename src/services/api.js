@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8080/api";
+const API_URL = "https://inventory-backend-lsom.onrender.com/api";
 
 const getHeaders = () => {
   const token = localStorage.getItem("token");
@@ -13,8 +13,11 @@ const getHeaders = () => {
 
   return headers;
 };
+
 const handleResponse = async (res) => {
+
   if (res.status === 401) {
+
     localStorage.removeItem("token");
 
     window.location.href = "/";
@@ -25,14 +28,21 @@ const handleResponse = async (res) => {
   const text = await res.text();
 
   try {
+
     return JSON.parse(text);
+
   } catch {
+
     return text;
   }
 };
+
 const api = {
+
   get: async (endpoint) => {
+
     const res = await fetch(`${API_URL}${endpoint}`, {
+      method: "GET",
       headers: getHeaders(),
     });
 
@@ -40,6 +50,7 @@ const api = {
   },
 
   post: async (endpoint, body) => {
+
     const res = await fetch(`${API_URL}${endpoint}`, {
       method: "POST",
       headers: getHeaders(),
@@ -50,6 +61,7 @@ const api = {
   },
 
   put: async (endpoint, body = {}) => {
+
     const res = await fetch(`${API_URL}${endpoint}`, {
       method: "PUT",
       headers: getHeaders(),
@@ -60,6 +72,7 @@ const api = {
   },
 
   delete: async (endpoint) => {
+
     const res = await fetch(`${API_URL}${endpoint}`, {
       method: "DELETE",
       headers: getHeaders(),

@@ -15,7 +15,9 @@ function Settings() {
 
   const loadSettings = async () => {
     try {
-      const data = await api.get("/settings");
+      const res = await api.get("/settings");
+
+      const data = res.data;
 
       setForm({
         safetyStock: data.safetyStock || 5,
@@ -47,7 +49,9 @@ function Settings() {
   };
   const saveSettings = async () => {
     try {
-      const data = await api.post("/settings", form);
+      const res = await api.post("/settings", form);
+
+      console.log(res.data);
 
       console.log(data);
 

@@ -47,9 +47,9 @@ function Login() {
         password,
       });
 
-      localStorage.setItem("token", res.token);
-      localStorage.setItem("username", res.username);
-      localStorage.setItem("tenantId", res.tenantId);
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("username", res.data.username);
+      localStorage.setItem("tenantId", res.data.tenantId);
 
       window.location.href = "/";
     } catch (err) {
