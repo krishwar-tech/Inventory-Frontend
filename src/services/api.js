@@ -1,4 +1,4 @@
-const API_URL = "https://inventory-backend-lsom.onrender.com/api";
+const API_URL = "https://inventory-backend-1-n98q.onrender.com/api";
 
 const getHeaders = () => {
   const token = localStorage.getItem("token");
