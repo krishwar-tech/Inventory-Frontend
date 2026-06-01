@@ -30,8 +30,6 @@ export default function Inventory() {
   const loadHistory = async () => {
     try {
       const res = await api.get("/inventory/history");
-
-setHistory(res.data);
       setHistory(res.data);
     } catch (err) {
       console.log(err);

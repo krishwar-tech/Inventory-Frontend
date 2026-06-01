@@ -13,8 +13,6 @@ export default function Finance() {
       const res = await api.get("/finance/dashboard");
 
       setData(res.data);
-
-      setData(res.data);
     } catch (error) {
       console.log(error);
     } finally {

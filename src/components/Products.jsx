@@ -43,8 +43,6 @@ export default function Products() {
       const res = await api.get("/products/stats");
 
       setStats(res.data);
-
-      setStats(data);
     } catch {}
   };
 
@@ -212,7 +210,7 @@ export default function Products() {
         setForm({
           name: data.lookup.name || "",
           barcode: code,
-          category: data.lookup.category || "",
+          categoryId: data.lookup.category || "",
           mrp: data.lookup.mrp || "",
           price: "",
           unit: data.lookup.unit || "pcs",

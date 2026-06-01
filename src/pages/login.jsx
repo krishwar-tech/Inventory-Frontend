@@ -35,65 +35,45 @@ function Login() {
   }, []);
 
   // LOGIN
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-
-    setLoading(true);
-
-    try {
-      const res = await api.post("/auth/login", {
-        username,
-        password,
-      });
-
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("username", res.data.username);
-      localStorage.setItem("tenantId", res.data.tenantId);
-
-      window.location.href = "/";
-    } catch (err) {
-      console.error(err);
-
-      alert("Invalid Credentials");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // REGISTER
-
-  const handleRegister = async (e) => {
-    e.preventDefault();
-
-    setLoading(true);
-
-    try {
-      await api.post("/auth/register", {
-        companyName,
-        email,
-        phone,
-        username: regUsername,
-        password: regPassword,
-      });
-
-      alert("Account Created Successfully");
-
-      setCompanyName("");
-      setEmail("");
-      setPhone("");
-      setRegUsername("");
-      setRegPassword("");
-
-      setIsRegister(false);
-    } catch (err) {
-      console.error(err);
-
-      alert("Registration Failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  try {
+    const res = await api.post("/auth/login", { username, password });
+    // ApiResponse structure: { success, message, status, data: { token, username, tenantId } }
+    localStorage.setItem("token", res.data.token);
+    localStorage.setItem("username", res.data.username);
+    localStorage.setItem("tenantId", res.data.tenantId);
+    window.location.href = "/";
+  } catch (err) {
+    console.error(err);
+    alert("Invalid Credentials");
+  } finally {
+    setLoading(false);
+  }
+};
+const handleRegister = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  try {
+    await api.post("/auth/register", {
+      companyName,
+      email,
+      phone,
+      username: regUsername,
+      password: regPassword,
+    });
+    alert("Account Created Successfully! Please login.");
+    setCompanyName(""); setEmail(""); setPhone("");
+    setRegUsername(""); setRegPassword("");
+    setIsRegister(false);
+  } catch (err) {
+    console.error(err);
+    alert("Registration Failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <>
@@ -533,77 +513,49 @@ function Login() {
       `}</style>
 
       <div className="page">
-
         {/* LEFT SIDE */}
 
         <div className="left">
-
           <div>
-
             <div className="logo-row">
-
-              <div className="logo">
-                S
-              </div>
+              <div className="logo">S</div>
 
               <div className="brand">
+                <h1>StockFlow</h1>
 
-                <h1>
-                  StockFlow
-                </h1>
-
-                <p>
-                  Enterprise Inventory Platform
-                </p>
-
+                <p>Enterprise Inventory Platform</p>
               </div>
-
             </div>
 
             <div className="hero">
-
               <h2>
                 Smarter Inventory For
                 <span> Modern Businesses.</span>
               </h2>
 
               <p>
-                Manage products, procurement, billing,
-                reports and inventory operations securely
-                with your own multi-tenant workspace.
+                Manage products, procurement, billing, reports and inventory
+                operations securely with your own multi-tenant workspace.
               </p>
-
             </div>
 
             <div className="stats">
-
               <div className="card">
+                <h3>Live Orders</h3>
 
-                <h3>
-                  Live Orders
-                </h3>
-
-                <div className="card-value blue">
-                  {orders}
-                </div>
+                <div className="card-value blue">{orders}</div>
 
                 <div className="chart">
-
                   <div className="bar" style={{ height: "40%" }}></div>
                   <div className="bar" style={{ height: "70%" }}></div>
                   <div className="bar" style={{ height: "55%" }}></div>
                   <div className="bar" style={{ height: "85%" }}></div>
                   <div className="bar" style={{ height: "65%" }}></div>
-
                 </div>
-
               </div>
 
               <div className="card">
-
-                <h3>
-                  Revenue
-                </h3>
+                <h3>Revenue</h3>
 
                 <div className="card-value green">
                   ₹{revenue.toLocaleString()}
@@ -617,21 +569,15 @@ function Login() {
                     fontSize: "14px",
                   }}
                 >
-                  +18% growth this month with faster
-                  stock movement and procurement.
+                  +18% growth this month with faster stock movement and
+                  procurement.
                 </p>
-
               </div>
 
               <div className="card">
+                <h3>Inventory Health</h3>
 
-                <h3>
-                  Inventory Health
-                </h3>
-
-                <div className="card-value orange">
-                  94%
-                </div>
+                <div className="card-value orange">94%</div>
 
                 <p
                   style={{
@@ -641,21 +587,14 @@ function Login() {
                     fontSize: "14px",
                   }}
                 >
-                  Low stock alerts and smart reorder
-                  tracking enabled.
+                  Low stock alerts and smart reorder tracking enabled.
                 </p>
-
               </div>
 
               <div className="card">
+                <h3>Active Stores</h3>
 
-                <h3>
-                  Active Stores
-                </h3>
-
-                <div className="card-value">
-                  12
-                </div>
+                <div className="card-value">12</div>
 
                 <p
                   style={{
@@ -665,55 +604,35 @@ function Login() {
                     fontSize: "14px",
                   }}
                 >
-                  Multi-tenant architecture securely
-                  isolates all customer data.
+                  Multi-tenant architecture securely isolates all customer data.
                 </p>
-
               </div>
-
             </div>
-
           </div>
 
-          <div className="floating f1">
-            🔥 Billing Increased 22%
-          </div>
+          <div className="floating f1">🔥 Billing Increased 22%</div>
 
-          <div className="floating f2">
-            📦 14 New Products Added
-          </div>
-
+          <div className="floating f2">📦 14 New Products Added</div>
         </div>
 
         {/* RIGHT SIDE */}
 
         <div className="right">
-
           <div className="form-card">
-
             {!isRegister ? (
-
               <>
                 <div className="form-title">
-
-                  <h2>
-                    Welcome Back 👋
-                  </h2>
+                  <h2>Welcome Back 👋</h2>
 
                   <p>
-                    Login to continue managing your
-                    business operations securely.
+                    Login to continue managing your business operations
+                    securely.
                   </p>
-
                 </div>
 
                 <form onSubmit={handleLogin}>
-
                   <div className="group">
-
-                    <label className="label">
-                      Username
-                    </label>
+                    <label className="label">Username</label>
 
                     <input
                       type="text"
@@ -723,14 +642,10 @@ function Login() {
                       required
                       className="input"
                     />
-
                   </div>
 
                   <div className="group">
-
-                    <label className="label">
-                      Password
-                    </label>
+                    <label className="label">Password</label>
 
                     <input
                       type="password"
@@ -740,53 +655,34 @@ function Login() {
                       required
                       className="input"
                     />
-
                   </div>
 
-                  <button
-                    type="submit"
-                    className="btn"
-                    disabled={loading}
-                  >
+                  <button type="submit" className="btn" disabled={loading}>
                     {loading ? "Signing In..." : "Login to Dashboard"}
                   </button>
-
                 </form>
 
                 <div className="switch">
-
                   New to StockFlow?
-
                   <span onClick={() => setIsRegister(true)}>
                     Create Account
                   </span>
-
                 </div>
               </>
-
             ) : (
-
               <>
                 <div className="form-title">
-
-                  <h2>
-                    Create Account 🚀
-                  </h2>
+                  <h2>Create Account 🚀</h2>
 
                   <p>
-                    Start your own company workspace
-                    with StockFlow enterprise tools.
+                    Start your own company workspace with StockFlow enterprise
+                    tools.
                   </p>
-
                 </div>
 
                 <form onSubmit={handleRegister}>
-
                   <div className="group">
-
-                    <label className="label">
-                      Company Name
-                    </label>
+                    <label className="label">Company Name</label>
 
                     <input
                       type="text"
@@ -796,14 +692,10 @@ function Login() {
                       required
                       className="input"
                     />
-
                   </div>
 
                   <div className="group">
-
-                    <label className="label">
-                      Email
-                    </label>
+                    <label className="label">Email</label>
 
                     <input
                       type="email"
@@ -813,14 +705,10 @@ function Login() {
                       required
                       className="input"
                     />
-
                   </div>
 
                   <div className="group">
-
-                    <label className="label">
-                      Phone Number
-                    </label>
+                    <label className="label">Phone Number</label>
 
                     <input
                       type="text"
@@ -830,14 +718,10 @@ function Login() {
                       required
                       className="input"
                     />
-
                   </div>
 
                   <div className="group">
-
-                    <label className="label">
-                      Username
-                    </label>
+                    <label className="label">Username</label>
 
                     <input
                       type="text"
@@ -847,14 +731,10 @@ function Login() {
                       required
                       className="input"
                     />
-
                   </div>
 
                   <div className="group">
-
-                    <label className="label">
-                      Password
-                    </label>
+                    <label className="label">Password</label>
 
                     <input
                       type="password"
@@ -864,40 +744,23 @@ function Login() {
                       required
                       className="input"
                     />
-
                   </div>
 
-                  <button
-                    type="submit"
-                    className="btn"
-                    disabled={loading}
-                  >
+                  <button type="submit" className="btn" disabled={loading}>
                     {loading ? "Creating..." : "Create Account"}
                   </button>
-
                 </form>
 
                 <div className="switch">
-
                   Already have an account?
-
-                  <span onClick={() => setIsRegister(false)}>
-                    Login
-                  </span>
-
+                  <span onClick={() => setIsRegister(false)}>Login</span>
                 </div>
               </>
-
             )}
 
-            <div className="footer">
-              Powered by StockFlow Enterprise
-            </div>
-
+            <div className="footer">Powered by StockFlow Enterprise</div>
           </div>
-
         </div>
-
       </div>
     </>
   );

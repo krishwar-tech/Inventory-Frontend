@@ -189,18 +189,16 @@ export default function Procurement() {
 
       const token = localStorage.getItem("token");
 
-      const res = await fetch(
-        "https://inventory-backend-final-1.onrender.com/api/procurement/import-excel",
-        {
-          method: "POST",
+      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
+      const res = await fetch(`${baseUrl}/api/procurement/import-excel`, {
+        method: "POST",
 
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-
-          body: fd,
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+
+        body: fd,
+      });
 
       const data = await res.json();
 
