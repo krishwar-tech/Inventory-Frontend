@@ -1022,7 +1022,7 @@ body.dark-theme .stat-box h4{
 
           <div className="row-grid">
             <div className="col">
-              <label>Name</label>
+              <label>Product Name</label>
               <input
                 value={form.name}
                 onChange={(e) =>
@@ -1051,7 +1051,7 @@ body.dark-theme .stat-box h4{
             </div>
 
             <div className="col">
-              <label>Category</label>
+              <label> Product Category</label>
               <select
                 value={form.categoryId}
                 onChange={(e) =>
@@ -1087,7 +1087,7 @@ body.dark-theme .stat-box h4{
             </div>
 
             <div className="col">
-              <label>Price</label>
+              <label>Selling Price</label>
               <input
                 value={form.price}
                 onChange={(e) =>

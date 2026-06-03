@@ -12,7 +12,6 @@ import Inventory from "./components/Inventory";
 import Reports from "./components/Reports";
 import Masters from "./components/Masters";
 import Settings from "./components/Settings";
-import PendingProducts from "./components/PendingProducts";
 import Finance from "./components/Finance";
 
 function App() {
@@ -84,7 +83,6 @@ function App() {
           {activePage === "reports" && <Reports />}
           {activePage === "masters" && <Masters />}
           {activePage === "settings" && <Settings />}
-          {activePage === "pending" && <PendingProducts />}
           {activePage === "finance" && <Finance />}
         </main>
       </div>

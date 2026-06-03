@@ -36,13 +36,6 @@ function Sidebar({ activePage, setActivePage }) {
       </div>
 
       <div
-        className={`nav-item ${activePage === "pending" ? "active" : ""}`}
-        onClick={() => setActivePage("pending")}
-      >
-        🟡 Pending Approvals
-      </div>
-
-      <div
         className={`nav-item ${activePage === "inventory" ? "active" : ""}`}
         onClick={() => setActivePage("inventory")}
       >

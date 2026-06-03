@@ -22,9 +22,6 @@ export default function Procurement() {
     qty: "",
     costPrice: "",
     paidAmount: "",
-    poNumber: "",
-    invoiceRef: "",
-    remarks: "",
   });
 
   const [filters, setFilters] = useState({
@@ -144,11 +141,7 @@ export default function Procurement() {
 
         paidAmount: parseFloat(form.paidAmount || 0),
 
-        poNumber: form.poNumber,
-
-        invoiceRef: form.invoiceRef,
-
-        remarks: form.remarks,
+        date: form.date,
       });
 
       alert("Procurement Added");
@@ -171,9 +164,6 @@ export default function Procurement() {
       qty: "",
       costPrice: "",
       paidAmount: "",
-      poNumber: "",
-      invoiceRef: "",
-      remarks: "",
     });
   };
 
@@ -949,41 +939,15 @@ export default function Procurement() {
             </div>
 
             <div>
-              <label>Paid Amount</label>
-              <input
-                name="paidAmount"
-                value={form.paidAmount}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
               <label>PO Number</label>
-              <input
-                name="poNumber"
-                value={form.poNumber}
-                onChange={handleChange}
-              />
+              <input value="Auto Generated" readOnly  />
             </div>
           </div>
 
           <div className="grid2" style={{ marginTop: 16 }}>
             <div>
               <label>Invoice Ref</label>
-              <input
-                name="invoiceRef"
-                value={form.invoiceRef}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
-              <label>Remarks</label>
-              <input
-                name="remarks"
-                value={form.remarks}
-                onChange={handleChange}
-              />
+              <input value="Auto Generated" readOnly />
             </div>
           </div>
 
@@ -1042,6 +1006,8 @@ export default function Procurement() {
             <table>
               <thead>
                 <tr>
+                  <th>PO Number</th>
+                  <th>Invoice Ref</th>
                   <th>Product</th>
                   <th>Supplier</th>
                   <th>Qty</th>
@@ -1057,11 +1023,13 @@ export default function Procurement() {
               <tbody>
                 {filteredLogs.length === 0 ? (
                   <tr>
-                    <td colSpan="9">No records found</td>
+                    <td colSpan="11">No records found</td>
                   </tr>
                 ) : (
                   filteredLogs.map((l) => (
                     <tr key={l.id}>
+                      <td>{l.poNumber}</td>
+                      <td>{l.invoiceRef}</td>
                       <td>{l.product?.name}</td>
                       <td>{l.supplier?.name}</td>
                       <td>{l.qty}</td>
