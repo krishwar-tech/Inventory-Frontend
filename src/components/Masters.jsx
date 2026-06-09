@@ -5,10 +5,29 @@ function Masters() {
   const [suppliers, setSuppliers] = useState([]);
   const [categories, setCategories] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [shelfLives, setShelfLives] = useState([]);
+  const [shelfLifeMonths, setShelfLifeMonths] = useState("");
+
+  const [showShelfLifePopup, setShowShelfLifePopup] = useState(false);
+
+  const [mappingType, setMappingType] = useState("");
+  const [selectedMappings, setSelectedMappings] = useState([]);
+
+  const [subCategories, setSubCategories] = useState([]);
+
+  const [subCategoryName, setSubCategoryName] = useState("");
+
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   const [supplierName, setSupplierName] = useState("");
   const [categoryName, setCategoryName] = useState("");
   const [customerName, setCustomerName] = useState("");
+  const [toast, setToast] = useState(null);
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   useEffect(() => {
     loadAll();
@@ -16,22 +35,33 @@ function Masters() {
 
   const loadAll = async () => {
     try {
-      const s = await api.get("/masters/suppliers");
+      const [s, c, sc, sl, cu] = await Promise.all([
+        api.get("/masters/suppliers"),
+        api.get("/masters/categories"),
+        api.get("/masters/subcategories"),
+        api.get("/masters/shelf-lives"),
+        api.get("/masters/customers"),
+      ]);
 
-      const c = await api.get("/masters/categories");
+      // ADD THESE TWO LINES
+      console.log("RAW suppliers response:", s);
+      console.log("suppliers data:", s.data);
 
-      const cu = await api.get("/masters/customers");
-
-      setSuppliers(s.data);
-
-      setCategories(c.data);
-
-      setCustomers(cu.data);
+      setSuppliers(s.data || []);
+      setCategories(c.data || []);
+      setSubCategories(sc.data || []);
+      setShelfLives(sl.data || []);
+      setCustomers(cu.data || []);
     } catch (err) {
-      console.log(err);
+      console.log("LOAD ERROR:", err); // ADD THIS TOO
     }
   };
 
+  const toggleMapping = (id) => {
+    setSelectedMappings((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
   const addSupplier = async () => {
     if (!supplierName.trim()) return;
 
@@ -63,6 +93,33 @@ function Masters() {
       console.log(err);
     }
   };
+
+  const addSubCategory = async () => {
+    if (!selectedCategory || !subCategoryName.trim()) return;
+
+    try {
+      await api.post("/masters/subcategories", {
+        categoryId: selectedCategory,
+        name: subCategoryName,
+      });
+
+      setSubCategoryName("");
+      setSelectedCategory("");
+
+      await loadAll();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  const deleteSubCategory = async (id) => {
+    try {
+      await api.delete(`/masters/subcategories/${id}`);
+
+      await loadAll();
+    } catch (err) {
+      console.log(err);
+    }
+  };
   const addCustomer = async () => {
     if (!customerName.trim()) return;
 
@@ -72,6 +129,63 @@ function Masters() {
       });
 
       setCustomerName("");
+
+      await loadAll();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  const formatShelfLife = (months) => {
+    const years = Math.floor(months / 12);
+    const remainingMonths = months % 12;
+
+    if (years === 0) {
+      return `${months} Month${months > 1 ? "s" : ""}`;
+    }
+
+    if (remainingMonths === 0) {
+      return `${years} Year${years > 1 ? "s" : ""}`;
+    }
+
+    return `${years} Year${years > 1 ? "s" : ""} ${remainingMonths} Month${remainingMonths > 1 ? "s" : ""}`;
+  };
+  const addShelfLife = () => {
+    if (!shelfLifeMonths) return;
+
+    setShowShelfLifePopup(true);
+  };
+
+  const saveShelfLife = async () => {
+    if (!mappingType || selectedMappings.length === 0) {
+      alert("Please select at least one item");
+      return;
+    }
+    try {
+      const payload = {
+        name: formatShelfLife(Number(shelfLifeMonths)),
+        months: Number(shelfLifeMonths),
+        mappingType: mappingType, // ← ADD THIS
+        mappingIds: selectedMappings, // ← ADD THIS
+      };
+
+      await api.post("/masters/shelf-lives", payload);
+
+      setShelfLifeMonths("");
+      setMappingType("");
+      setSelectedMappings([]);
+      setShowShelfLifePopup(false);
+
+      await loadAll();
+      showToast("Shelf life added successfully! ✅"); // ← ADD THIS
+    } catch (err) {
+      console.log(err);
+      showToast("Failed to save shelf life", "error");
+    }
+  };
+
+  const deleteShelfLife = async (id) => {
+    try {
+      await api.delete(`/masters/shelf-lives/${id}`);
 
       await loadAll();
     } catch (err) {
@@ -125,6 +239,20 @@ function Masters() {
           <div className="card-circle"></div>
           <div className="top-label">Categories</div>
           <div className="top-value green">{categories.length}</div>
+        </div>
+        <div className="top-master-card">
+          <div className="card-circle"></div>
+
+          <div className="top-label">Sub Categories</div>
+
+          <div className="top-value purple">{subCategories.length}</div>
+        </div>
+        <div className="top-master-card">
+          <div className="card-circle"></div>
+
+          <div className="top-label">Shelf Life</div>
+
+          <div className="top-value blue">{shelfLives.length}</div>
         </div>
 
         <div className="top-master-card">
@@ -209,6 +337,99 @@ function Masters() {
           </div>
         </div>
 
+        <div className="master-card">
+          <div className="master-head">🗂️ Sub Categories</div>
+
+          <div className="mini-text">{subCategories.length} Sub Categories</div>
+
+          <div className="master-add sub-cat-add">
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+            >
+              <option value="">Select Category</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+
+            <div className="sub-input-row">
+              <input
+                type="text"
+                placeholder="Sub Category name"
+                value={subCategoryName}
+                onChange={(e) => setSubCategoryName(e.target.value)}
+              />
+              <button className="add-btn" onClick={addSubCategory}>
+                +
+              </button>
+            </div>
+          </div>
+
+          <div className="master-list">
+            {subCategories.map((item) => (
+              <div className="master-row" key={item.id}>
+                <span>
+                  🗂️ {item.name}
+                  <br />
+                  <small style={{ color: "#64748b" }}>
+                    {item.category?.name}
+                  </small>
+                </span>
+
+                <button
+                  className="delete-btn"
+                  onClick={() => deleteSubCategory(item.id)}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="master-card">
+          <div className="master-head">⏳ Shelf Life</div>
+
+          <div className="mini-text">
+            {shelfLives.length} Shelf Life Options
+          </div>
+
+          <div className="master-add">
+            <input
+              type="number"
+              placeholder="Enter Months "
+              value={shelfLifeMonths}
+              onChange={(e) => setShelfLifeMonths(e.target.value)}
+            />
+
+            <button className="add-btn" onClick={addShelfLife}>
+              +
+            </button>
+          </div>
+
+          <div className="master-list">
+            {shelfLives.map((item) => (
+              <div className="master-row" key={item.id}>
+                <span>
+                  ⏳ {formatShelfLife(item.months)}
+                  <br />
+                  <small style={{ color: "#64748b" }}>
+                    {item.mappingName || "—"}
+                  </small>
+                </span>
+                <button
+                  className="delete-btn"
+                  onClick={() => deleteShelfLife(item.id)}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* CUSTOMERS */}
         <div className="master-card">
           <div className="master-head">👤 Customers</div>
@@ -250,16 +471,247 @@ function Masters() {
           </div>
         </div>
       </div>
+      {showShelfLifePopup && (
+        <div className="popup-overlay">
+          <div className="popup-card">
+            <h3>Map Shelf Life</h3>
+
+            <div className="popup-option">
+              <label>
+                <input
+                  type="radio"
+                  value="category"
+                  checked={mappingType === "category"}
+                  onChange={(e) => setMappingType(e.target.value)}
+                />
+                Category
+              </label>
+
+              <label>
+                <input
+                  type="radio"
+                  value="subcategory"
+                  checked={mappingType === "subcategory"}
+                  onChange={(e) => setMappingType(e.target.value)}
+                />
+                Sub Category
+              </label>
+            </div>
+
+            {mappingType === "category" && (
+              <div className="checklist-box">
+                {categories.map((c) => (
+                  <label key={c.id} className="checklist-item">
+                    <input
+                      type="checkbox"
+                      checked={selectedMappings.includes(c.id)}
+                      onChange={() => toggleMapping(c.id)}
+                    />
+                    {c.name}
+                  </label>
+                ))}
+              </div>
+            )}
+
+            {mappingType === "subcategory" && (
+              <div className="checklist-box">
+                {subCategories.map((s) => (
+                  <label key={s.id} className="checklist-item">
+                    <input
+                      type="checkbox"
+                      checked={selectedMappings.includes(s.id)}
+                      onChange={() => toggleMapping(s.id)}
+                    />
+                    {s.name}
+                  </label>
+                ))}
+              </div>
+            )}
+
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                marginTop: "20px",
+              }}
+            >
+              <button
+                onClick={saveShelfLife}
+                style={{
+                  padding: "10px 20px",
+                  border: "none",
+                  borderRadius: "10px",
+                  background: "#2563eb",
+                  color: "white",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                }}
+              >
+                Save
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowShelfLifePopup(false);
+                  setMappingType("");
+                  setSelectedMappings([]);
+                }}
+                style={{
+                  padding: "10px 20px",
+                  border: "none",
+                  borderRadius: "10px",
+                  background: "#ef4444",
+                  color: "white",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
+      .checklist-box {
+  margin-top: 15px;
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.checklist-item:hover {
+  background: #f8fafc;
+}
+
+.checklist-item input {
+  width: 18px;
+  height: 18px;
+}
+      .popup-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.45);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+
+.popup-card{
+  width:420px;
+  background:white;
+  border-radius:20px;
+  padding:24px;
+  box-shadow:0 20px 50px rgba(0,0,0,.25);
+}
+
+.popup-card select{
+  width:100%;
+  height:50px;
+  margin-top:15px;
+  border:1px solid #ddd;
+  border-radius:12px;
+  padding:0 15px;
+}
+
+.popup-option{
+  display:flex;
+  gap:20px;
+  margin-top:15px;
+}
+
+      .master-add select{
+        width:100%;
+        height:56px;
+        border:1px solid var(--border);
+        border-radius:16px;
+        padding:0 18px;
+        background:var(--bg);
+        color:var(--text);
+        }
 
         .masters-top-grid{
           display:grid;
-          grid-template-columns:repeat(3,1fr);
+          grid-template-columns:repeat(5,1fr);
           gap:20px;
           margin-top:26px;
           margin-bottom:24px;
         }
+          .sub-cat-add {
+            flex-direction: column;
+            gap: 10px;
+          }
+
+          .sub-cat-add select {
+            width: 100%;
+            height: 50px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 0 18px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 15px;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 18px center;
+            transition: all 0.2s ease;
+          }
+
+          .sub-cat-add select:focus {
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.08);
+          }
+
+          .sub-cat-add select:hover {
+            border-color: #94a3b8;
+          }
+
+          .sub-input-row {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+          }
+
+          .sub-input-row input {
+            flex: 1;
+            height: 50px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 0 18px;
+            font-size: 15px;
+            outline: none;
+            background: var(--bg);
+            color: var(--text);
+            transition: all 0.2s ease;
+          }
+
+          .sub-input-row input:focus {
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.08);
+          }
+
+          .sub-input-row .add-btn {
+            width: 56px;
+            height: 50px;
+            flex-shrink: 0;
+          }
 
         .top-master-card{
           position:relative;
@@ -306,10 +758,12 @@ function Masters() {
         .orange{
           color:#f59e0b;
         }
-
+        .purple{
+          color:#7c3aed;
+        }
         .masters-grid{
           display:grid;
-          grid-template-columns:repeat(3,1fr);
+          grid-template-columns:repeat(4,1fr);
           gap:24px;
           margin-top:10px;
         }
@@ -585,6 +1039,26 @@ function Masters() {
         }
 
       `}</style>
+      {toast && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "30px",
+            right: "30px",
+            background: toast.type === "error" ? "#ef4444" : "#16a34a",
+            color: "white",
+            padding: "14px 24px",
+            borderRadius: "14px",
+            fontWeight: "600",
+            fontSize: "15px",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+            zIndex: 99999,
+            animation: "fadeUp 0.3s ease",
+          }}
+        >
+          {toast.msg}
+        </div>
+      )}
     </section>
   );
 }

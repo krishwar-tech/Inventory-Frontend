@@ -5,7 +5,7 @@ import api from "../services/api";
 export default function Products() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-
+  const [subCategories, setSubCategories] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
@@ -24,6 +24,7 @@ export default function Products() {
     name: "",
     barcode: "",
     categoryId: "",
+    subCategoryId: "",
     mrp: "",
     price: "",
     unit: "pcs",
@@ -59,6 +60,15 @@ export default function Products() {
       setCategories([]);
     }
   };
+  const loadSubCategories = async () => {
+    try {
+      const res = await api.get("/masters/subcategories");
+
+      setSubCategories(Array.isArray(res.data) ? res.data : []);
+    } catch {
+      setSubCategories([]);
+    }
+  };
 
   const refreshAll = () => {
     loadProducts();
@@ -68,6 +78,7 @@ export default function Products() {
   useEffect(() => {
     refreshAll();
     loadCategories();
+    loadSubCategories();
   }, []);
 
   const filteredProducts = products.filter((p) => {
@@ -100,14 +111,40 @@ export default function Products() {
   };
 
   const handleAdd = async () => {
+    if (!form.name.trim()) {
+      alert("Product Name is required");
+      return;
+    }
+
+    if (!form.mrp || Number(form.mrp) <= 0) {
+      alert("MRP is required");
+      return;
+    }
+
+    if (!form.price || Number(form.price) <= 0) {
+      alert("Selling Price is required");
+      return;
+    }
+
+    if (!form.categoryId && !form.subCategoryId) {
+      alert("Select Category OR Sub Category");
+      return;
+    }
     try {
       await api.post("/products", {
         name: form.name,
-        barcode: form.barcode,
-        categoryId: form.categoryId,
-        mrp: Number(form.mrp) || 0,
-        price: Number(form.price) || 0,
-        unit: form.unit,
+
+        barcode: form.barcode || null,
+
+        categoryId: form.categoryId || null,
+
+        subCategoryId: form.subCategoryId || null,
+
+        mrp: form.mrp === "" ? null : Number(form.mrp),
+
+        price: form.price === "" ? null : Number(form.price),
+
+        unit: form.unit || null,
       });
 
       resetForm();
@@ -208,12 +245,13 @@ export default function Products() {
 
       if (data.lookup && data.lookup.found) {
         setForm({
-          name: data.lookup.name || "",
-          barcode: code,
-          categoryId: data.lookup.category || "",
-          mrp: data.lookup.mrp || "",
+          name: "",
+          barcode: "",
+          categoryId: "",
+          subCategoryId: "",
+          mrp: "",
           price: "",
-          unit: data.lookup.unit || "pcs",
+          unit: "pcs",
         });
 
         alert("Auto-filled product");
@@ -976,6 +1014,272 @@ body.dark-theme .stat-box h4{
       body.dark-theme .sum-card::after{
         background:rgba(255,255,255,.02);
       }
+
+      /* ===== PRODUCT FORM CARD ===== */
+      .product-form-card {
+        background: linear-gradient(145deg, #ffffff, #f8faff) !important;
+        border: 1px solid #e0e7ff !important;
+        border-radius: 28px !important;
+        padding: 32px !important;
+      }
+
+      body.dark-theme .product-form-card {
+        background: linear-gradient(145deg, #1a2540, #111827) !important;
+        border: 1px solid rgba(99,102,241,0.18) !important;
+      }
+
+      .form-card-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 6px;
+      }
+
+      .form-card-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        box-shadow: 0 8px 20px rgba(22,163,74,0.22);
+        flex-shrink: 0;
+      }
+
+      .form-card-title {
+        font-size: 20px !important;
+        font-weight: 800 !important;
+        color: #111827;
+        margin: 0 0 4px 0 !important;
+      }
+
+      body.dark-theme .form-card-title {
+        color: #f1f5f9;
+      }
+
+      .form-card-sub {
+        font-size: 13px;
+        color: #6b7280;
+        margin: 0;
+      }
+
+      body.dark-theme .form-card-sub {
+        color: #94a3b8;
+      }
+
+      .form-divider {
+        height: 1px;
+        background: linear-gradient(to right, #e0e7ff, transparent);
+        margin: 22px 0;
+      }
+
+      body.dark-theme .form-divider {
+        background: linear-gradient(to right, rgba(99,102,241,0.2), transparent);
+      }
+
+      /* ===== FIELD LABELS ===== */
+      .field-label {
+        display: flex !important;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        color: #374151 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        margin-bottom: 8px !important;
+      }
+
+      body.dark-theme .field-label {
+        color: #94a3b8 !important;
+      }
+
+      .label-icon {
+        font-size: 13px;
+      }
+
+      /* ===== FIELD INPUTS ===== */
+      .field-input {
+        width: 100%;
+        height: 50px;
+        border-radius: 14px !important;
+        border: 1.5px solid #e5e7eb !important;
+        background: #ffffff !important;
+        color: #111827 !important;
+        padding: 0 16px !important;
+        font-size: 15px !important;
+        font-weight: 500;
+        outline: none;
+        transition: all 0.25s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      }
+
+      body.dark-theme .field-input {
+        background: #0f172a !important;
+        border-color: #2d3f5e !important;
+        color: #f1f5f9 !important;
+        box-shadow: none;
+      }
+
+      .field-input:hover {
+        border-color: #a5b4fc !important;
+      }
+
+      .field-input:focus {
+        border-color: #22c55e !important;
+        box-shadow: 0 0 0 4px rgba(34,197,94,0.12) !important;
+        background: #f0fdf4 !important;
+      }
+
+      body.dark-theme .field-input:focus {
+        background: #0d2318 !important;
+      }
+
+      /* ===== RUPEE PREFIX ===== */
+      .input-prefix-wrap {
+        position: relative;
+      }
+
+      .input-prefix {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-weight: 700;
+        color: #6b7280;
+        font-size: 16px;
+        z-index: 1;
+        pointer-events: none;
+      }
+
+      .field-input.has-prefix {
+        padding-left: 32px !important;
+      }
+
+      /* ===== FORM FOOTER ===== */
+      .form-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px dashed #e5e7eb;
+      }
+
+      body.dark-theme .form-footer {
+        border-top-color: rgba(255,255,255,0.07);
+      }
+
+      .form-note {
+        font-size: 12px;
+        color: #9ca3af;
+        font-style: italic;
+      }
+
+      .add-product-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 50px;
+        padding: 0 28px;
+        border: none;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #22c55e, #15803d);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        box-shadow: 0 10px 24px rgba(22,163,74,0.28);
+        letter-spacing: 0.3px;
+      }
+
+      .add-product-btn span {
+        font-size: 20px;
+        font-weight: 900;
+        line-height: 1;
+      }
+
+      .add-product-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 36px rgba(22,163,74,0.36);
+      }
+
+      .add-product-btn:active {
+        transform: translateY(0);
+      }
+        .stat-icon {
+  position: absolute;
+  bottom: 18px;
+  right: 20px;
+  font-size: 32px;
+  opacity: 0.18;
+  z-index: 1;
+  filter: grayscale(0.2);
+  transition: .3s ease;
+}
+
+.stat-box:hover .stat-icon {
+  opacity: 0.35;
+  transform: scale(1.15) rotate(-5deg);
+}
+
+.stat-box p {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-top: 6px;
+  position: relative;
+  z-index: 2;
+}        
+  /* Glowing header */
+.product-table thead th {
+  background: linear-gradient(135deg, #0f172a, #1e293b) !important;
+  font-size: 11px !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase;
+  padding: 18px 14px !important;
+  border-bottom: 2px solid rgba(99,102,241,0.25) !important;
+}
+
+/* Search bar glow */
+.filters input:focus {
+  border-color: #22c55e !important;
+  box-shadow: 0 0 0 4px rgba(34,197,94,0.12) !important;
+}
+
+/* Row hover highlight */
+.product-table tbody tr:hover {
+  background: rgba(34,197,94,0.06) !important;
+  transform: none !important;
+}
+
+body.dark-theme .product-table tbody tr:hover {
+  background: rgba(34,197,94,0.08) !important;
+}
+
+/* Margin cell color coding */
+td.margin-high { color: #16a34a; font-weight: 800; }
+td.margin-mid  { color: #f59e0b; font-weight: 800; }
+td.margin-low  { color: #ef4444; font-weight: 800; }
+
+/* Stock pill */
+.stock-pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(34,197,94,0.12);
+  color: #16a34a;
+}
+
+.stock-pill.low {
+  background: rgba(239,68,68,0.12);
+  color: #ef4444;
+}
       `}</style>
 
       <div className="content products-page">
@@ -989,83 +1293,105 @@ body.dark-theme .stat-box h4{
         {/* SUMMARY */}
         <div className="stats-grid">
           <div className="stat-box stat-blue">
-            <h4>Total</h4>
+            <h4>Total Products</h4>
             <h2>{stats.total}</h2>
+            <div className="stat-icon">📦</div>
           </div>
 
           <div className="stat-box stat-green">
             <h4>Active</h4>
             <h2>{stats.active}</h2>
+            <div className="stat-icon">✅</div>
           </div>
 
           <div className="stat-box stat-orange">
             <h4>Pending</h4>
             <h2>{stats.pending}</h2>
+            <div className="stat-icon">⏳</div>
           </div>
 
           <div className="stat-box stat-red">
             <h4>Low Stock</h4>
             <h2>{stats.lowStock}</h2>
+            <div className="stat-icon">⚠️</div>
           </div>
         </div>
         {/* ADD PRODUCT */}
-        <div className="card">
-          <h4
-            style={{
-              fontWeight: 800,
-              fontSize: 20,
-              marginBottom: 18,
-            }}
-          >
-            Product Information
-          </h4>
+        <div className="card product-form-card">
+          <div className="form-card-header">
+            <div className="form-card-icon">📦</div>
+            <div>
+              <h4 className="form-card-title">Product Information</h4>
+              <p className="form-card-sub">
+                Fill in the details to register a new product
+              </p>
+            </div>
+          </div>
+
+          <div className="form-divider" />
 
           <div className="row-grid">
             <div className="col">
-              <label>Product Name</label>
+              <label className="field-label">
+                <span className="label-icon">🏷️</span> Product Name
+              </label>
               <input
+                className="field-input"
+                placeholder="e.g. Red Sandal Soap 100g"
                 value={form.name}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    name: e.target.value,
-                  })
-                }
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
             </div>
 
             <div className="col">
-              <label>Barcode</label>
-
-              <div className="barcode-wrap">
-                <input
-                  value={form.barcode}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      barcode: e.target.value,
-                    })
-                  }
-                />
-              </div>
+              <label className="field-label">
+                <span className="label-icon">📊</span> Barcode
+              </label>
+              <input
+                className="field-input"
+                placeholder="Scan or type barcode"
+                value={form.barcode}
+                onChange={(e) => setForm({ ...form, barcode: e.target.value })}
+              />
             </div>
 
             <div className="col">
-              <label> Product Category</label>
+              <label className="field-label">
+                <span className="label-icon">📁</span> Product Category
+              </label>
               <select
+                className="field-input"
                 value={form.categoryId}
+                disabled={!!form.subCategoryId}
                 onChange={(e) =>
-                  setForm({
-                    ...form,
-                    categoryId: e.target.value,
-                  })
+                  setForm({ ...form, categoryId: e.target.value })
                 }
               >
-                <option value="">Select</option>
-
+                <option value="">Select Category</option>
                 {categories.map((c) => (
                   <option value={c.id} key={c.id}>
                     {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="col">
+              <label className="field-label">
+                <span className="label-icon">🗂️</span> Sub Category
+              </label>
+              <select
+                className="field-input"
+                value={form.subCategoryId}
+                disabled={!!form.categoryId}
+                onChange={(e) =>
+                  setForm({ ...form, subCategoryId: e.target.value })
+                }
+              >
+                <option value="">Select Sub Category</option>
+                {subCategories.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
                   </option>
                 ))}
               </select>
@@ -1074,42 +1400,43 @@ body.dark-theme .stat-box h4{
 
           <div className="row-grid">
             <div className="col">
-              <label>MRP</label>
-              <input
-                value={form.mrp}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    mrp: e.target.value,
-                  })
-                }
-              />
+              <label className="field-label">
+                <span className="label-icon">💰</span> MRP
+              </label>
+              <div className="input-prefix-wrap">
+                <span className="input-prefix">₹</span>
+                <input
+                  className="field-input has-prefix"
+                  placeholder="0.00"
+                  value={form.mrp}
+                  onChange={(e) => setForm({ ...form, mrp: e.target.value })}
+                />
+              </div>
             </div>
 
             <div className="col">
-              <label>Selling Price</label>
-              <input
-                value={form.price}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    price: e.target.value,
-                  })
-                }
-              />
+              <label className="field-label">
+                <span className="label-icon">🏷️</span> Selling Price
+              </label>
+              <div className="input-prefix-wrap">
+                <span className="input-prefix">₹</span>
+                <input
+                  className="field-input has-prefix"
+                  placeholder="0.00"
+                  value={form.price}
+                  onChange={(e) => setForm({ ...form, price: e.target.value })}
+                />
+              </div>
             </div>
 
             <div className="col">
-              <label>Unit</label>
-
+              <label className="field-label">
+                <span className="label-icon">📐</span> Unit
+              </label>
               <select
+                className="field-input"
                 value={form.unit}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    unit: e.target.value,
-                  })
-                }
+                onChange={(e) => setForm({ ...form, unit: e.target.value })}
               >
                 <option>pcs</option>
                 <option>kg</option>
@@ -1119,9 +1446,12 @@ body.dark-theme .stat-box h4{
             </div>
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <button className="green" onClick={handleAdd}>
-              + Add Product
+          <div className="form-footer">
+            <span className="form-note">
+              * All fields are recommended for accurate inventory tracking
+            </span>
+            <button className="add-product-btn" onClick={handleAdd}>
+              <span>+</span> Add Product
             </button>
           </div>
         </div>
@@ -1176,8 +1506,13 @@ body.dark-theme .stat-box h4{
                   >
                     <td>
                       <div className="product-name">
-                        <div className="product-avatar">
-                          {(p.name || "P")[0]}
+                        <div
+                          className="product-avatar"
+                          style={{
+                            background: `hsl(${((p.name || "P").charCodeAt(0) * 47) % 360}, 65%, 48%)`,
+                          }}
+                        >
+                          {(p.name || "P")[0].toUpperCase()}
                         </div>
 
                         {p.name}

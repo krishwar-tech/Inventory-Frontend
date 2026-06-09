@@ -17,7 +17,7 @@ function Settings() {
     try {
       const res = await api.get("/settings");
 
-      const data = res.data;
+      const data = res.data.data;
 
       setForm({
         safetyStock: data.safetyStock || 5,
@@ -52,8 +52,6 @@ function Settings() {
       const res = await api.post("/settings", form);
 
       console.log(res.data);
-
-      console.log(data);
 
       alert("Settings Saved");
     } catch (error) {

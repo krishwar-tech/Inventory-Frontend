@@ -5,7 +5,6 @@ export default function Procurement() {
   const [products, setProducts] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [logs, setLogs] = useState([]);
-
   const [summary, setSummary] = useState({
     totalPurchase: 0,
     totalPaid: 0,
@@ -18,8 +17,7 @@ export default function Procurement() {
   const [form, setForm] = useState({
     productName: "",
     supplier: "",
-    date: new Date().toISOString().split("T")[0],
-    qty: "",
+    manufactureDate: new Date().toISOString().split("T")[0],
     costPrice: "",
     paidAmount: "",
   });
@@ -31,9 +29,7 @@ export default function Procurement() {
 
   const refreshAll = async () => {
     await loadProducts();
-
     await loadSuppliers();
-
     await loadLogs();
   };
 
@@ -112,6 +108,8 @@ export default function Procurement() {
     });
   };
 
+ 
+
   const createProcurement = async () => {
     try {
       const selectedProduct = products.find((p) => p.name === form.productName);
@@ -141,7 +139,7 @@ export default function Procurement() {
 
         paidAmount: parseFloat(form.paidAmount || 0),
 
-        date: form.date,
+        manufactureDate: form.manufactureDate,
       });
 
       alert("Procurement Added");
@@ -825,6 +823,241 @@ export default function Procurement() {
         }
 
       }
+
+      /* SUMMARY WATERMARK + SUB */
+.sum-watermark {
+  position: absolute;
+  bottom: 14px;
+  right: 18px;
+  font-size: 36px;
+  opacity: 0.13;
+  transition: .3s ease;
+  z-index: 1;
+}
+.sum-card:hover .sum-watermark {
+  opacity: 0.28;
+  transform: scale(1.18) rotate(-8deg);
+}
+.sum-sub {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 6px 0 0;
+  position: relative;
+  z-index: 2;
+}
+
+/* IMPORT CARD */
+.import-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.import-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.import-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 8px 18px rgba(37,99,235,0.22);
+  flex-shrink: 0;
+}
+.upload-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 2px dashed #d1d5db;
+  border-radius: 16px;
+  padding: 28px 20px;
+  cursor: pointer;
+  transition: .25s ease;
+  background: #f8fafc;
+}
+.dark-theme .upload-zone {
+  border-color: #334155;
+  background: rgba(255,255,255,0.02);
+}
+.upload-zone:hover {
+  border-color: #22c55e;
+  background: #f0fdf4;
+}
+.dark-theme .upload-zone:hover {
+  background: rgba(34,197,94,0.05);
+}
+.upload-zone-icon { font-size: 28px; }
+.upload-zone-text { font-weight: 700; font-size: 14px; color: #374151; }
+.dark-theme .upload-zone-text { color: #e2e8f0; }
+.upload-zone-hint { font-size: 12px; color: #94a3b8; }
+
+/* PROC FORM CARD */
+.proc-form-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+.proc-form-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #22c55e, #15803d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 8px 20px rgba(22,163,74,0.22);
+  flex-shrink: 0;
+}
+.proc-divider {
+  height: 1px;
+  background: linear-gradient(to right, #e0e7ff, transparent);
+  margin: 18px 0;
+}
+.dark-theme .proc-divider {
+  background: linear-gradient(to right, rgba(255,255,255,0.07), transparent);
+}
+.proc-label {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #64748b !important;
+  margin-bottom: 8px !important;
+}
+.dark-theme .proc-label { color: #94a3b8 !important; }
+
+/* RUPEE PREFIX */
+.rupee-wrap { position: relative; }
+.rupee-prefix {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 700;
+  color: #6b7280;
+  z-index: 1;
+  pointer-events: none;
+}
+.has-rupee { padding-left: 30px !important; }
+
+/* READONLY FIELD */
+.readonly-field {
+  background: #f1f5f9 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed;
+}
+.dark-theme .readonly-field {
+  background: #1e293b !important;
+  color: #475569 !important;
+}
+
+/* PROC FORM FOOTER */
+.proc-form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px dashed #e5e7eb;
+}
+.dark-theme .proc-form-footer { border-top-color: rgba(255,255,255,0.07); }
+.form-note { font-size: 12px; color: #9ca3af; font-style: italic; }
+.save-proc-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 28px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #22c55e, #15803d);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all .25s ease;
+  box-shadow: 0 10px 24px rgba(22,163,74,0.28);
+}
+.save-proc-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 36px rgba(22,163,74,0.36);
+}
+
+/* TABLE CHIPS & CELLS */
+.po-chip {
+  background: #eff6ff;
+  color: #2563eb;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  font-family: monospace;
+  white-space: nowrap;
+}
+.dark-theme .po-chip { background: #1e3a5f; color: #93c5fd; }
+
+.inv-ref-chip {
+  background: #f5f3ff;
+  color: #7c3aed;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: monospace;
+  white-space: nowrap;
+}
+.dark-theme .inv-ref-chip { background: #2e1065; color: #c4b5fd; }
+
+.proc-product-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.proc-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  color: #fff;
+  flex-shrink: 0;
+}
+.proc-product-name {
+  font-weight: 700;
+  font-size: 14px;
+}
+.supplier-chip {
+  background: #f0fdf4;
+  color: #15803d;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.dark-theme .supplier-chip { background: #052e16; color: #4ade80; }
+
+.date-cell { display: flex; flex-direction: column; gap: 2px; }
+.date-main { font-weight: 700; font-size: 13px; }
+
+/* TABLE HEADER */
+table thead th {
+  font-size: 11px !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+}
       `}</style>
 
       <div className="proc-page">
@@ -859,16 +1092,26 @@ export default function Procurement() {
           </div>
         </div>
         {/* IMPORT */}
-        <div className="card">
-          <div className="small-title">📄 EXCEL IMPORT</div>
-
-          <div className="import-sub">
-            Upload supplier invoice Excel files (.xlsx, .xls)
+        <div className="card import-card">
+          <div className="import-header">
+            <div className="import-icon">📥</div>
+            <div>
+              <div className="small-title" style={{ margin: 0 }}>
+                Excel Import
+              </div>
+              <p className="import-sub" style={{ margin: "4px 0 0" }}>
+                Upload supplier invoice files (.xlsx, .xls)
+              </p>
+            </div>
           </div>
 
-          <button className="btn blue" onClick={() => fileRef.current.click()}>
-            Upload Invoice Excel
-          </button>
+          <div className="upload-zone" onClick={() => fileRef.current.click()}>
+            <span className="upload-zone-icon">📂</span>
+            <span className="upload-zone-text">
+              Click to browse or drop Excel file here
+            </span>
+            <span className="upload-zone-hint">.xlsx / .xls supported</span>
+          </div>
 
           <input
             type="file"
@@ -880,12 +1123,24 @@ export default function Procurement() {
         </div>
 
         {/* FORM */}
-        <div className="card">
-          <div className="small-title">📦 NEW PROCUREMENT</div>
+        <div className="card proc-form-card">
+          <div className="proc-form-header">
+            <div className="proc-form-icon">📦</div>
+            <div>
+              <div className="small-title" style={{ margin: 0 }}>
+                New Procurement
+              </div>
+              <p className="import-sub" style={{ margin: "4px 0 0" }}>
+                Register a new purchase entry with supplier details
+              </p>
+            </div>
+          </div>
+
+          <div className="proc-divider" />
 
           <div className="grid3">
             <div>
-              <label>Product</label>
+              <label className="proc-label">📦 Product</label>
               <select
                 name="productName"
                 value={form.productName}
@@ -899,7 +1154,7 @@ export default function Procurement() {
             </div>
 
             <div>
-              <label>Supplier</label>
+              <label className="proc-label">🏢 Supplier</label>
               <select
                 name="supplier"
                 value={form.supplier}
@@ -913,51 +1168,72 @@ export default function Procurement() {
             </div>
 
             <div>
-              <label>Date</label>
+              <label className="proc-label">📅 Manufacture Date</label>
+
               <input
                 type="date"
-                name="date"
-                value={form.date}
+                name="manufactureDate"
+                value={form.manufactureDate}
                 onChange={handleChange}
               />
             </div>
-          </div>
+
+         </div>
 
           <div className="grid4" style={{ marginTop: 16 }}>
             <div>
-              <label>Qty</label>
-              <input name="qty" value={form.qty} onChange={handleChange} />
-            </div>
-
-            <div>
-              <label>Cost Price</label>
+              <label className="proc-label">🔢 Qty</label>
               <input
-                name="costPrice"
-                value={form.costPrice}
+                placeholder="0"
+                name="qty"
+                value={form.qty}
                 onChange={handleChange}
               />
             </div>
 
             <div>
-              <label>PO Number</label>
-              <input value="Auto Generated" readOnly  />
+              <label className="proc-label">💰 Cost Price</label>
+              <div className="rupee-wrap">
+                <span className="rupee-prefix">₹</span>
+                <input
+                  className="has-rupee"
+                  placeholder="0.00"
+                  name="costPrice"
+                  value={form.costPrice}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="proc-label">📋 PO Number</label>
+              <input
+                value="Auto Generated"
+                readOnly
+                className="readonly-field"
+              />
             </div>
           </div>
 
           <div className="grid2" style={{ marginTop: 16 }}>
             <div>
-              <label>Invoice Ref</label>
-              <input value="Auto Generated" readOnly />
+              <label className="proc-label">🧾 Invoice Ref</label>
+              <input
+                value="Auto Generated"
+                readOnly
+                className="readonly-field"
+              />
             </div>
           </div>
 
-          <button
-            className="btn green"
-            style={{ marginTop: 18 }}
-            onClick={createProcurement}
-          >
-            + Save Procurement
-          </button>
+          <div className="proc-form-footer">
+            <span className="form-note">
+              * PO Number and Invoice Ref are auto-generated on save
+            </span>
+            <button className="save-proc-btn" onClick={createProcurement}>
+              <span>+</span> Save Procurement
+            </button>
+          </div>
         </div>
 
         {/* FILTER */}
@@ -1013,6 +1289,8 @@ export default function Procurement() {
                   <th>Qty</th>
                   <th>Total</th>
                   <th>Paid</th>
+                  <th>MFD</th>
+                  <th>Expiry</th>
                   <th>Due</th>
                   <th>Status</th>
                   <th>Date</th>
@@ -1023,39 +1301,91 @@ export default function Procurement() {
               <tbody>
                 {filteredLogs.length === 0 ? (
                   <tr>
-                    <td colSpan="11">No records found</td>
+                    <td
+                      colSpan="11"
+                      style={{
+                        textAlign: "center",
+                        padding: "40px",
+                        color: "#94a3b8",
+                      }}
+                    >
+                      No procurement records found
+                    </td>
                   </tr>
                 ) : (
                   filteredLogs.map((l) => (
                     <tr key={l.id}>
-                      <td>{l.poNumber}</td>
-                      <td>{l.invoiceRef}</td>
-                      <td>{l.product?.name}</td>
-                      <td>{l.supplier?.name}</td>
-                      <td>{l.qty}</td>
-                      <td>₹{l.totalCost}</td>
-                      <td>₹{l.paidAmount || 0}</td>
+                      <td>
+                        <span className="po-chip">{l.poNumber}</span>
+                      </td>
+                      <td>
+                        <span className="inv-ref-chip">{l.invoiceRef}</span>
+                      </td>
+
+                      <td>
+                        <div className="proc-product-cell">
+                          <div
+                            className="proc-avatar"
+                            style={{
+                              background: `hsl(${((l.product?.name || "P").charCodeAt(0) * 47) % 360}, 58%, 44%)`,
+                            }}
+                          >
+                            {(l.product?.name || "P")[0].toUpperCase()}
+                          </div>
+                          <span className="proc-product-name">
+                            {l.product?.name}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td>
+                        <span className="supplier-chip">
+                          🏢 {l.supplier?.name}
+                        </span>
+                      </td>
+
+                      <td>
+                        <strong>{l.qty}</strong>
+                      </td>
+                      <td>
+                        <strong>₹{l.totalCost}</strong>
+                      </td>
+                      <td style={{ color: "#16a34a", fontWeight: 700 }}>
+                        ₹{l.paidAmount || 0}
+                      </td>
+
+                      <td>{l.manufactureDate || "-"}</td>
+
+                      <td>
+                        <strong style={{ color: "#dc2626" }}>
+                          {l.expiryDate || "-"}
+                        </strong>
+                      </td>
+
                       <td
                         style={{
-                          color: l.dueAmount > 0 ? "#dc2626" : "inherit",
-                          fontWeight: 700,
+                          color: l.dueAmount > 0 ? "#dc2626" : "#94a3b8",
+                          fontWeight: 800,
                         }}
                       >
-                        ₹{l.dueAmount || 0}
+                        {l.dueAmount > 0 ? `₹${l.dueAmount}` : "—"}
                       </td>
+
                       <td>
                         <span
                           className="badge"
-                          style={{
-                            width: "50%",
-                            textAlign: "center",
-                            background: badgeColor(l.paymentStatus),
-                          }}
+                          style={{ background: badgeColor(l.paymentStatus) }}
                         >
                           {l.paymentStatus}
                         </span>
                       </td>
-                      <td>{l.date}</td>
+
+                      <td>
+                        <div className="date-cell">
+                          <span className="date-main">{l.date}</span>
+                        </div>
+                      </td>
+
                       <td>
                         <div className="action-row">
                           {l.dueAmount > 0 && (
@@ -1063,15 +1393,14 @@ export default function Procurement() {
                               className="action-btn pay-btn"
                               onClick={() => updatePayment(l.id)}
                             >
-                              Pay
+                              💳 Pay
                             </button>
                           )}
-
                           <button
                             className="action-btn delete-btn"
                             onClick={() => deleteRow(l.id)}
                           >
-                            Delete
+                            🗑 Delete
                           </button>
                         </div>
                       </td>

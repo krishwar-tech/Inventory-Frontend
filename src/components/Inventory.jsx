@@ -565,6 +565,202 @@ export default function Inventory() {
         }
       }
 
+      /* WATERMARK ICON ON SUMMARY CARDS */
+.sum-watermark {
+  position: absolute;
+  bottom: 12px;
+  right: 16px;
+  font-size: 38px;
+  opacity: 0.13;
+  transition: .3s ease;
+  z-index: 1;
+}
+
+.sum-card:hover .sum-watermark {
+  opacity: 0.28;
+  transform: scale(1.2) rotate(-8deg);
+}
+
+/* SECTION HEADER */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.section-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  flex-shrink: 0;
+}
+
+.section-sub {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 3px 0 0;
+}
+
+/* FIELD WRAP LABELS */
+.field-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inv-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #64748b;
+}
+
+body.dark-theme .inv-label {
+  color: #94a3b8;
+}
+
+/* ACTION BUTTONS ROW */
+.action-btns {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px dashed #e5e7eb;
+}
+
+body.dark-theme .action-btns {
+  border-top-color: rgba(255,255,255,0.07);
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  height: 48px;
+  padding: 0 24px;
+  border-radius: 14px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  letter-spacing: 0.3px;
+}
+
+.action-btn span {
+  font-size: 18px;
+}
+
+.action-btn:hover {
+  transform: translateY(-3px);
+}
+
+.btn-return {
+  background: linear-gradient(135deg, #22c55e, #15803d);
+  box-shadow: 0 8px 20px rgba(34,197,94,0.28);
+}
+
+.btn-adjust {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 8px 20px rgba(245,158,11,0.28);
+}
+
+.btn-damage {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 8px 20px rgba(239,68,68,0.28);
+}
+
+/* PRODUCT CELL WITH AVATAR */
+.inv-product-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.inv-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.inv-product-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+body.dark-theme .inv-product-name {
+  color: #f1f5f9;
+}
+
+.inv-product-cat {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+/* SKU CHIP */
+.sku-chip {
+  background: #f1f5f9;
+  color: #475569;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+body.dark-theme .sku-chip {
+  background: #1e293b;
+  color: #94a3b8;
+}
+
+/* TIME CELL */
+.time-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.time-date {
+  font-weight: 700;
+  font-size: 13px;
+  color: #334155;
+}
+
+body.dark-theme .time-date {
+  color: #e2e8f0;
+}
+
+.time-time {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* TABLE HEADER DARK */
+.inventory-table thead th,
+.history-table thead th {
+  font-size: 11px !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase;
+  font-weight: 800 !important;
+}
+
       `}</style>
 
       <div className="page-content inventory-wrap">
@@ -580,106 +776,111 @@ export default function Inventory() {
 
         <div className="summary-grid">
           <div className="sum-card sum-blue">
-            <div className="sum-title">📦 Total Products</div>
+            <div className="sum-title">Total Products</div>
             <div className="sum-number">{summary.total}</div>
+            <div className="sum-watermark">📦</div>
           </div>
 
           <div className="sum-card sum-green">
-            <div className="sum-title">✅ Safe Stock</div>
+            <div className="sum-title">Safe Stock</div>
             <div className="sum-number">{summary.safe}</div>
+            <div className="sum-watermark">✅</div>
           </div>
 
           <div className="sum-card sum-orange">
-            <div className="sum-title">⚠ Low Stock</div>
+            <div className="sum-title">Low Stock</div>
             <div className="sum-number">{summary.low}</div>
+            <div className="sum-watermark">⚠️</div>
           </div>
 
           <div className="sum-card sum-red">
-            <div className="sum-title">🔁 Reorder Now</div>
+            <div className="sum-title">Reorder Now</div>
             <div className="sum-number">{summary.reorder}</div>
+            <div className="sum-watermark">🔁</div>
           </div>
         </div>
 
         {/* STOCK ACTIONS */}
 
-        <div className="inventory-card">
+        <div className="inventory-card action-card">
           <div className="inventory-top">
-            <h3>⚙ STOCK ACTIONS</h3>
+            <div className="section-header">
+              <div
+                className="section-icon"
+                style={{
+                  background: "linear-gradient(135deg,#6366f1,#4f46e5)",
+                }}
+              >
+                ⚙️
+              </div>
+              <div>
+                <h3 style={{ margin: 0 }}>Stock Actions</h3>
+                <p className="section-sub">
+                  Record returns, adjustments and damaged stock
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="action-grid">
-            <select
-              value={action.productId}
-              onChange={(e) =>
-                setAction({
-                  ...action,
-                  productId: e.target.value,
-                })
-              }
-            >
-              <option value="">Select Product</option>
+            <div className="field-wrap">
+              <label className="inv-label">📦 Product</label>
+              <select
+                value={action.productId}
+                onChange={(e) =>
+                  setAction({ ...action, productId: e.target.value })
+                }
+              >
+                <option value="">Select Product</option>
+                {products.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-              {products.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+            <div className="field-wrap">
+              <label className="inv-label">🔢 Quantity</label>
+              <input
+                placeholder="Enter qty"
+                value={action.qty}
+                onChange={(e) => setAction({ ...action, qty: e.target.value })}
+              />
+            </div>
 
-            <input
-              placeholder="Qty"
-              value={action.qty}
-              onChange={(e) =>
-                setAction({
-                  ...action,
-                  qty: e.target.value,
-                })
-              }
-            />
+            <div className="field-wrap">
+              <label className="inv-label">⇄ Mode</label>
+              <select
+                value={action.mode}
+                onChange={(e) => setAction({ ...action, mode: e.target.value })}
+              >
+                <option value="IN">Adjust In</option>
+                <option value="OUT">Adjust Out</option>
+              </select>
+            </div>
 
-            <select
-              value={action.mode}
-              onChange={(e) =>
-                setAction({
-                  ...action,
-                  mode: e.target.value,
-                })
-              }
-            >
-              <option value="IN">Adjust In</option>
-              <option value="OUT">Adjust Out</option>
-            </select>
-
-            <input
-              placeholder="Remarks"
-              value={action.remarks}
-              onChange={(e) =>
-                setAction({
-                  ...action,
-                  remarks: e.target.value,
-                })
-              }
-            />
+            <div className="field-wrap">
+              <label className="inv-label">📝 Remarks</label>
+              <input
+                placeholder="Optional note..."
+                value={action.remarks}
+                onChange={(e) =>
+                  setAction({ ...action, remarks: e.target.value })
+                }
+              />
+            </div>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              gap: 12,
-              flexWrap: "wrap",
-              marginTop: 18,
-            }}
-          >
-            <button className="btn green" onClick={returnStock}>
-              + Return
+          <div className="action-btns">
+            <button className="action-btn btn-return" onClick={returnStock}>
+              <span>↩</span> Return Stock
             </button>
-
-            <button className="btn yellow" onClick={adjustStock}>
-              ⇄ Adjust
+            <button className="action-btn btn-adjust" onClick={adjustStock}>
+              <span>⇄</span> Adjust Stock
             </button>
-
-            <button className="btn red" onClick={damageStock}>
-              - Damage
+            <button className="action-btn btn-damage" onClick={damageStock}>
+              <span>⚠</span> Mark Damage
             </button>
           </div>
         </div>
@@ -762,7 +963,6 @@ export default function Inventory() {
               <tbody>
                 {filteredProducts.map((item) => {
                   const status = getStatus(item);
-
                   return (
                     <tr
                       key={item.id}
@@ -774,11 +974,30 @@ export default function Inventory() {
                             : "reorder-row"
                       }
                     >
-                      <td>{item.name}</td>
+                      <td>
+                        <div className="inv-product-cell">
+                          <div
+                            className="inv-avatar"
+                            style={{
+                              background: `hsl(${((item.name || "P").charCodeAt(0) * 47) % 360}, 60%, 45%)`,
+                            }}
+                          >
+                            {(item.name || "P")[0].toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="inv-product-name">{item.name}</div>
+                            <div className="inv-product-cat">
+                              {item.category?.name || "—"}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
 
-                      <td>{item.sku}</td>
+                      <td>
+                        <span className="sku-chip">{item.sku}</span>
+                      </td>
 
-                      <td>{item.category?.name || "-"}</td>
+                      <td>{item.category?.name || "—"}</td>
 
                       <td>
                         <div className="stock-box">
@@ -793,26 +1012,20 @@ export default function Inventory() {
                           >
                             {item.stock || 0}
                           </span>
-
                           <div className="bar-bg">
                             <div
                               className="bar-fill"
                               style={{
-                                width: `${Math.min(
-                                  (item.stock || 0) * 2,
-                                  100,
-                                )}%`,
+                                width: `${Math.min((item.stock || 0) * 2, 100)}%`,
                                 background: getBarColor(status),
                               }}
-                            ></div>
+                            />
                           </div>
                         </div>
                       </td>
 
                       <td>{item.unit}</td>
-
                       <td>{item.reorderLevel || 10}</td>
-
                       <td>{item.safetyStock || 5}</td>
 
                       <td>
@@ -836,7 +1049,6 @@ export default function Inventory() {
                           {item.abcClass || "C"}
                         </span>
                       </td>
-
                       <td>
                         <span className="circle-badge fsn">
                           {item.fsnClass || "N"}
@@ -880,25 +1092,51 @@ export default function Inventory() {
                   )
                   .map((h) => (
                     <tr key={h.id}>
-                      <td>{h.product?.name}</td>
+                      <td>
+                        <div className="inv-product-cell">
+                          <div
+                            className="inv-avatar"
+                            style={{
+                              background: `hsl(${((h.product?.name || "P").charCodeAt(0) * 47) % 360}, 60%, 45%)`,
+                            }}
+                          >
+                            {(h.product?.name || "P")[0].toUpperCase()}
+                          </div>
+                          <span>{h.product?.name}</span>
+                        </div>
+                      </td>
 
                       <td>
                         <span
                           className="mini-badge"
-                          style={{
-                            background: txnColor(h.type),
-                          }}
+                          style={{ background: txnColor(h.type) }}
                         >
-                          {h.type}
+                          {h.type === "RETURN"
+                            ? "↩ RETURN"
+                            : h.type === "DAMAGE"
+                              ? "⚠ DAMAGE"
+                              : h.type === "ADJUST_IN"
+                                ? "↑ ADJUST IN"
+                                : "↓ ADJUST OUT"}
                         </span>
                       </td>
 
-                      <td>{h.qty}</td>
-
-                      <td>{h.remarks || "-"}</td>
+                      <td>
+                        <strong>{h.qty}</strong>
+                      </td>
+                      <td style={{ color: "#94a3b8", fontStyle: "italic" }}>
+                        {h.remarks || "—"}
+                      </td>
 
                       <td>
-                        {h.createdAt?.replace("T", " ")?.substring(0, 19)}
+                        <div className="time-cell">
+                          <span className="time-date">
+                            {h.createdAt?.substring(0, 10)}
+                          </span>
+                          <span className="time-time">
+                            {h.createdAt?.substring(11, 19)}
+                          </span>
+                        </div>
                       </td>
                     </tr>
                   ))}

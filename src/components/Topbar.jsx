@@ -6,6 +6,10 @@ function Topbar({ logout }) {
 
   const [time, setTime] = useState("");
 
+  const [showLowStockPopup, setShowLowStockPopup] = useState(false);
+
+  const [lowStockProducts, setLowStockProducts] = useState([]);
+
   const [darkMode, setDarkMode] = useState(
     localStorage.getItem("theme") === "dark",
   );
@@ -50,6 +54,8 @@ function Topbar({ logout }) {
       );
 
       setLowStockCount(lowStock.length);
+
+      setLowStockProducts(lowStock);
     } catch (error) {
       console.log(error);
 
@@ -124,6 +130,83 @@ function Topbar({ logout }) {
   return (
     <>
       <style>{`
+
+        .icon-btn{
+          width:40px;
+          height:40px;
+          border:none;
+          border-radius:12px;
+          cursor:pointer;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          background:#f3f4f6;
+          font-size:18px;
+          transition:.25s ease;
+          position:relative;
+        }
+
+        .icon-btn:hover
+          transform:translateY(-1px);
+        }
+
+        .dark-theme .icon-btn{
+          background:#1f2937;
+          color:#fff;
+        }
+
+        .notification-badge{
+          position:absolute;
+          top:-4px;
+          right:-4px;
+          width:18px;
+          height:18px;
+          border-radius:50%;
+          background:#ef4444;
+          color:#fff;
+          font-size:10px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-weight:700;
+        }
+
+        .lowstock-popup{
+          position:absolute;
+          top:55px;
+          right:0;
+          width:260px;
+          background:#fff;
+          border:1px solid #e5e7eb;
+          border-radius:14px;
+          padding:12px;
+          box-shadow:0 10px 30px rgba(0,0,0,.12);
+          z-index:999;
+        }
+
+        .dark-theme .lowstock-popup{
+          background:#111827;
+          border:1px solid #1f2937;
+        }
+
+        .lowstock-item{
+          padding:10px;
+          border-bottom:1px solid #e5e7eb;
+        }
+
+        .lowstock-item:last-child{
+          border-bottom:none;
+        }
+
+        .lowstock-name{
+          font-weight:700;
+          font-size:13px;
+        }
+
+        .lowstock-stock{
+          font-size:12px;
+          color:#ef4444;
+        }
         .topbar{
           height:68px;
           display:flex;
@@ -272,20 +355,48 @@ function Topbar({ logout }) {
 
       <header className="topbar">
         <div className="logo">
-          Stock<span>Flow</span>
+          Intelligent Inventory <span>Platform</span>
         </div>
 
         <div className="topbar-right">
           <div className="clock-box">🕒 {time}</div>
 
-          <button className="theme-btn" onClick={() => setDarkMode(!darkMode)}>
-            {darkMode ? "🌙 Dark" : "☀ Light"}
+          <button className="icon-btn" onClick={() => setDarkMode(!darkMode)}>
+            {darkMode ? "☀️" : "🌙"}
           </button>
 
-          <div className="stock-alert">⚠ {lowStockCount} Low Stock</div>
+          <div style={{ position: "relative" }}>
+            <button
+              className="icon-btn"
+              onClick={() => setShowLowStockPopup(!showLowStockPopup)}
+            >
+              🔔
+              {lowStockCount > 0 && (
+                <span className="notification-badge">{lowStockCount}</span>
+              )}
+            </button>
 
-          <button className="logout-btn" onClick={logout}>
-            Logout
+            {showLowStockPopup && (
+              <div className="lowstock-popup">
+                <b>Low Stock Items</b>
+
+                {lowStockProducts.length === 0 ? (
+                  <div style={{ marginTop: 10 }}>No Alerts</div>
+                ) : (
+                  lowStockProducts.map((item) => (
+                    <div key={item.id} className="lowstock-item">
+                      <div className="lowstock-name">{item.name}</div>
+
+                      <div className="lowstock-stock">Stock: {item.stock}</div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+
+          <button className="icon-btn" onClick={logout} title="Logout">
+            <i className="bi bi-power"></i>
           </button>
         </div>
       </header>

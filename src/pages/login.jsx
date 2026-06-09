@@ -521,7 +521,7 @@ const handleRegister = async (e) => {
               <div className="logo">S</div>
 
               <div className="brand">
-                <h1>StockFlow</h1>
+                <h1>Intelligent Inventory Platform</h1>
 
                 <p>Enterprise Inventory Platform</p>
               </div>
