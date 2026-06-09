@@ -18,6 +18,7 @@ export default function Procurement() {
     productName: "",
     supplier: "",
     manufactureDate: new Date().toISOString().split("T")[0],
+    qty: "",
     costPrice: "",
     paidAmount: "",
   });
@@ -108,8 +109,6 @@ export default function Procurement() {
     });
   };
 
- 
-
   const createProcurement = async () => {
     try {
       const selectedProduct = products.find((p) => p.name === form.productName);
@@ -158,7 +157,7 @@ export default function Procurement() {
     setForm({
       productName: "",
       supplier: "",
-      date: new Date().toISOString().split("T")[0],
+      manufactureDate: new Date().toISOString().split("T")[0],
       qty: "",
       costPrice: "",
       paidAmount: "",
@@ -237,9 +236,11 @@ export default function Procurement() {
   };
 
   const filteredLogs = logs.filter((l) => {
+    const supplierName = String(l.supplier?.name || "").toLowerCase();
+
     const supplierOk =
       !filters.supplier ||
-      l.supplier?.toLowerCase().includes(filters.supplier.toLowerCase());
+      supplierName.includes(filters.supplier.toLowerCase());
 
     const statusOk = !filters.status || l.paymentStatus === filters.status;
 
@@ -1177,8 +1178,7 @@ table thead th {
                 onChange={handleChange}
               />
             </div>
-
-         </div>
+          </div>
 
           <div className="grid4" style={{ marginTop: 16 }}>
             <div>
