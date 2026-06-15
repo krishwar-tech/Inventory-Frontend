@@ -8,6 +8,14 @@ function Masters() {
   const [shelfLives, setShelfLives] = useState([]);
   const [shelfLifeMonths, setShelfLifeMonths] = useState("");
 
+  const [gsts, setGsts] = useState([]);
+  const [gstPercentage, setGstPercentage] = useState("");
+
+  const [showGstPopup, setShowGstPopup] = useState(false);
+
+  const [gstMappingType, setGstMappingType] = useState("");
+  const [selectedGstMappings, setSelectedGstMappings] = useState([]);
+
   const [showShelfLifePopup, setShowShelfLifePopup] = useState(false);
 
   const [mappingType, setMappingType] = useState("");
@@ -35,11 +43,12 @@ function Masters() {
 
   const loadAll = async () => {
     try {
-      const [s, c, sc, sl, cu] = await Promise.all([
+      const [s, c, sc, sl, gst, cu] = await Promise.all([
         api.get("/masters/suppliers"),
         api.get("/masters/categories"),
         api.get("/masters/subcategories"),
         api.get("/masters/shelf-lives"),
+        api.get("/masters/gst"),
         api.get("/masters/customers"),
       ]);
 
@@ -52,6 +61,7 @@ function Masters() {
       setSubCategories(sc.data || []);
       setShelfLives(sl.data || []);
       setCustomers(cu.data || []);
+      setGsts(gst.data || []);
     } catch (err) {
       console.log("LOAD ERROR:", err); // ADD THIS TOO
     }
@@ -59,6 +69,12 @@ function Masters() {
 
   const toggleMapping = (id) => {
     setSelectedMappings((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
+  const toggleGstMapping = (id) => {
+    setSelectedGstMappings((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   };
@@ -182,6 +198,20 @@ function Masters() {
       showToast("Failed to save shelf life", "error");
     }
   };
+  const groupedShelfLives = Object.values(
+    shelfLives.reduce((acc, item) => {
+      if (!acc[item.months]) {
+        acc[item.months] = {
+          months: item.months,
+          mappings: [],
+        };
+      }
+
+      acc[item.months].mappings.push(item.mappingName || "-");
+
+      return acc;
+    }, {}),
+  );
 
   const deleteShelfLife = async (id) => {
     try {
@@ -192,6 +222,55 @@ function Masters() {
       console.log(err);
     }
   };
+
+  const addGst = () => {
+    if (!gstPercentage) return;
+
+    setShowGstPopup(true);
+  };
+  const saveGst = async () => {
+    if (!gstMappingType || selectedGstMappings.length === 0) {
+      alert("Please select at least one item");
+      return;
+    }
+
+    try {
+      await api.post("/masters/gst", {
+        gstPercentage: Number(gstPercentage),
+        mappingType: gstMappingType,
+        mappingIds: selectedGstMappings,
+      });
+
+      setGstPercentage("");
+      setGstMappingType("");
+      setSelectedGstMappings([]);
+
+      setShowGstPopup(false);
+
+      await loadAll();
+
+      showToast("GST added successfully ✅");
+    } catch (err) {
+      console.log(err);
+
+      showToast("Failed to save GST", "error");
+    }
+  };
+  const groupedGsts = Object.values(
+    gsts.reduce((acc, item) => {
+      if (!acc[item.gstPercentage]) {
+        acc[item.gstPercentage] = {
+          gstPercentage: item.gstPercentage,
+          mappings: [],
+        };
+      }
+
+      acc[item.gstPercentage].mappings.push(item.mappingName || "-");
+
+      return acc;
+    }, {}),
+  );
+
   const deleteSupplier = async (id) => {
     try {
       await api.delete(`/masters/suppliers/${id}`);
@@ -253,6 +332,11 @@ function Masters() {
           <div className="top-label">Shelf Life</div>
 
           <div className="top-value blue">{shelfLives.length}</div>
+        </div>
+        <div className="top-master-card">
+          <div className="card-circle"></div>
+          <div className="top-label">GST</div>
+          <div className="top-value green">{gsts.length}</div>
         </div>
 
         <div className="top-master-card">
@@ -410,21 +494,58 @@ function Masters() {
           </div>
 
           <div className="master-list">
-            {shelfLives.map((item) => (
-              <div className="master-row" key={item.id}>
-                <span>
-                  ⏳ {formatShelfLife(item.months)}
-                  <br />
-                  <small style={{ color: "#64748b" }}>
-                    {item.mappingName || "—"}
-                  </small>
-                </span>
-                <button
-                  className="delete-btn"
-                  onClick={() => deleteShelfLife(item.id)}
-                >
-                  ×
-                </button>
+            {groupedShelfLives.map((item) => (
+              <div className="master-row shelf-row" key={item.months}>
+                <div className="shelf-content">
+                  <div className="shelf-title">
+                    ⏳ {formatShelfLife(item.months)}
+                  </div>
+
+                  <div className="shelf-tooltip">
+                    {item.mappings.map((m, i) => (
+                      <span key={i} className="mapping-chip">
+                        {m}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="master-card">
+          <div className="master-head">💰 GST</div>
+
+          <div className="mini-text">{gsts.length} GST Options</div>
+
+          <div className="master-add">
+            <input
+              type="number"
+              placeholder="GST %"
+              value={gstPercentage}
+              onChange={(e) => setGstPercentage(e.target.value)}
+            />
+
+            <button className="add-btn" onClick={addGst}>
+              +
+            </button>
+          </div>
+
+          <div className="master-list">
+            {groupedGsts.map((item) => (
+              <div className="master-row shelf-row" key={item.gstPercentage}>
+                <div className="shelf-content">
+                  <div className="shelf-title">💰 {item.gstPercentage}%</div>
+
+                  <div className="shelf-tooltip">
+                    {item.mappings.map((m, i) => (
+                      <span key={i} className="mapping-chip">
+                        {m}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -573,8 +694,167 @@ function Masters() {
         </div>
       )}
 
+      {showGstPopup && (
+        <div className="popup-overlay">
+          <div className="popup-card">
+            <h3>Map GST</h3>
+
+            <div className="popup-option">
+              <label>
+                <input
+                  type="radio"
+                  value="category"
+                  checked={gstMappingType === "category"}
+                  onChange={(e) => setGstMappingType(e.target.value)}
+                />
+                Category
+              </label>
+
+              <label>
+                <input
+                  type="radio"
+                  value="subcategory"
+                  checked={gstMappingType === "subcategory"}
+                  onChange={(e) => setGstMappingType(e.target.value)}
+                />
+                Sub Category
+              </label>
+            </div>
+
+            {gstMappingType === "category" && (
+              <div className="checklist-box">
+                {categories.map((c) => (
+                  <label key={c.id} className="checklist-item">
+                    <input
+                      type="checkbox"
+                      checked={selectedGstMappings.includes(c.id)}
+                      onChange={() => toggleGstMapping(c.id)}
+                    />
+                    {c.name}
+                  </label>
+                ))}
+              </div>
+            )}
+
+            {gstMappingType === "subcategory" && (
+              <div className="checklist-box">
+                {subCategories.map((s) => (
+                  <label key={s.id} className="checklist-item">
+                    <input
+                      type="checkbox"
+                      checked={selectedGstMappings.includes(s.id)}
+                      onChange={() => toggleGstMapping(s.id)}
+                    />
+                    {s.name}
+                  </label>
+                ))}
+              </div>
+            )}
+
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                marginTop: "20px",
+              }}
+            >
+              <button
+                onClick={saveGst}
+                style={{
+                  padding: "10px 20px",
+                  border: "none",
+                  borderRadius: "10px",
+                  background: "#16a34a",
+                  color: "white",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                }}
+              >
+                Save
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowGstPopup(false);
+                  setGstMappingType("");
+                  setSelectedGstMappings([]);
+                }}
+                style={{
+                  padding: "10px 20px",
+                  border: "none",
+                  borderRadius: "10px",
+                  background: "#ef4444",
+                  color: "white",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <style>{`
-      .checklist-box {
+
+      .shelf-row{
+  position:relative;
+}
+
+.mapping-count{
+  color:#64748b;
+  font-size:12px;
+}
+
+.shelf-row{
+  display:block;
+  cursor:pointer;
+}
+
+.shelf-content{
+  width:100%;
+}
+
+.shelf-title{
+  font-weight:600;
+}
+
+.shelf-tooltip{
+  display:none;
+  margin-top:14px;
+  flex-wrap:wrap;
+  gap:12px;
+  row-gap:12px;
+}
+
+.shelf-row:hover .shelf-tooltip{
+  display:flex;
+}
+
+.mapping-chip{
+  background:#ffffff;
+  border:1px solid #dbeafe;
+  color:#334155;
+
+  padding:8px 14px;
+  border-radius:999px;
+
+  font-size:12px;
+  font-weight:600;
+
+  margin-right:4px;
+  margin-bottom:4px;
+}
+
+.shelf-tooltip div:last-child{
+  border-bottom:none;
+}
+
+.shelf-row:hover .shelf-tooltip{
+  display:flex;
+}
+      
+.checklist-box {
   margin-top: 15px;
   max-height: 250px;
   overflow-y: auto;
@@ -646,7 +926,7 @@ function Masters() {
 
         .masters-top-grid{
           display:grid;
-          grid-template-columns:repeat(5,1fr);
+          grid-template-columns:repeat(6,1fr);
           gap:20px;
           margin-top:26px;
           margin-bottom:24px;
@@ -1031,7 +1311,7 @@ function Masters() {
 
         .master-card{
           position:relative;
-          overflow:hidden;
+          overflow:visible;
         }
 
         .master-card:hover::before{
