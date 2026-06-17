@@ -5,6 +5,14 @@ export default function Procurement() {
   const [products, setProducts] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [logs, setLogs] = useState([]);
+  const [payAmount, setPayAmount] = useState("");
+  const [showPayInput, setShowPayInput] = useState(false);
+  const [showGrnModal, setShowGrnModal] = useState(false);
+
+  const [selectedGrn, setSelectedGrn] = useState([]);
+
+  const [selectedGrnNumber, setSelectedGrnNumber] = useState("");
+
   const [summary, setSummary] = useState({
     totalPurchase: 0,
     totalPaid: 0,
@@ -15,13 +23,18 @@ export default function Procurement() {
   const fileRef = useRef();
 
   const [form, setForm] = useState({
-    productName: "",
     supplier: "",
-    manufactureDate: new Date().toISOString().split("T")[0],
-    qty: "",
-    costPrice: "",
-    paidAmount: "",
+    invoiceRef: "",
   });
+
+  const [items, setItems] = useState([
+    {
+      productId: "",
+      qty: "",
+      costPrice: "",
+      manufactureDate: "",
+    },
+  ]);
 
   const [filters, setFilters] = useState({
     supplier: "",
@@ -63,105 +76,174 @@ export default function Procurement() {
 
   const loadLogs = async () => {
     try {
-      const data = await api.get("/procurement");
+      const data = await api.get("/procurement/grn");
       const reversed = Array.isArray(data.data) ? [...data.data].reverse() : [];
-
       setLogs(reversed);
-
-      calculateSummary(reversed);
+      await loadSummary(); // ✅ separate summary load
     } catch (err) {
       console.log(err);
-
       setLogs([]);
     }
   };
 
-  const calculateSummary = (rows) => {
-    let totalPurchase = 0;
-    let totalPaid = 0;
-    let totalDue = 0;
-    let unpaidCount = 0;
-
-    rows.forEach((r) => {
-      totalPurchase += Number(r.totalCost || 0);
-
-      totalPaid += Number(r.paidAmount || 0);
-
-      totalDue += Number(r.dueAmount || 0);
-
-      if (r.paymentStatus !== "PAID") {
-        unpaidCount++;
-      }
-    });
-
-    setSummary({
-      totalPurchase,
-      totalPaid,
-      totalDue,
-      unpaidCount,
-    });
-  };
-
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const createProcurement = async () => {
+  const loadSummary = async () => {
     try {
-      const selectedProduct = products.find((p) => p.name === form.productName);
+      const data = await api.get("/procurement"); // flat list with paidAmount, dueAmount
+      const rows = Array.isArray(data.data) ? data.data : [];
 
-      const selectedSupplier = suppliers.find((s) => s.name === form.supplier);
+      let totalPurchase = 0;
+      let totalPaid = 0;
+      let totalDue = 0;
+      let unpaidCount = 0;
 
-      if (!selectedProduct) {
-        alert("Select Product");
-
-        return;
-      }
-
-      if (!selectedSupplier) {
-        alert("Select Supplier");
-
-        return;
-      }
-
-      await api.post("/procurement", {
-        productId: selectedProduct.id,
-
-        supplierId: selectedSupplier.id,
-
-        qty: parseInt(form.qty),
-
-        costPrice: parseFloat(form.costPrice),
-
-        paidAmount: parseFloat(form.paidAmount || 0),
-
-        manufactureDate: form.manufactureDate,
+      // group by GRN to count open bills per GRN
+      const grnMap = {};
+      rows.forEach((r) => {
+        totalPurchase += Number(r.totalCost || 0);
+        totalPaid += Number(r.paidAmount || 0);
+        totalDue += Number(r.dueAmount || 0);
+        if (r.grnNumber) {
+          if (!grnMap[r.grnNumber]) grnMap[r.grnNumber] = [];
+          grnMap[r.grnNumber].push(r);
+        }
       });
 
-      alert("Procurement Added");
+      // a GRN is "open" if any of its rows is not PAID
+      Object.values(grnMap).forEach((grnRows) => {
+        const anyUnpaid = grnRows.some((r) => r.paymentStatus !== "PAID");
+        if (anyUnpaid) unpaidCount++;
+      });
 
-      resetForm();
-
-      await refreshAll();
+      setSummary({ totalPurchase, totalPaid, totalDue, unpaidCount });
     } catch (err) {
       console.log(err);
+    }
+  }
+  const addItem = () => {
+    setItems([
+      ...items,
+      {
+        productId: "",
+        qty: "",
+        costPrice: "",
+        manufactureDate: "",
+      },
+    ]);
+  };
 
-      alert("Failed to create procurement");
+  const updateItem = (index, field, value) => {
+    const copy = [...items];
+
+    copy[index][field] = value;
+
+    setItems(copy);
+  };
+
+  const removeItem = (index) => {
+    const copy = [...items];
+
+    copy.splice(index, 1);
+
+    setItems(copy);
+  };
+
+  const createGrn = async () => {
+    try {
+      const supplier = suppliers.find((s) => s.name === form.supplier);
+
+      if (!supplier) {
+        alert("Select Supplier");
+        return;
+      }
+
+      const payload = {
+        supplierId: supplier.id,
+        invoiceRef: form.invoiceRef || "NA",
+        items,
+      };
+
+      const res = await api.post("/procurement/grn", payload);
+
+      alert(`GRN Created : ${res.data.grnNumber}`);
+
+      setForm({
+        supplier: "",
+        invoiceRef: "",
+      });
+
+      setItems([
+        {
+          productId: "",
+          qty: "",
+          costPrice: "",
+        },
+      ]);
+
+      await refreshAll();
+    } catch (e) {
+      console.log(e);
+
+      alert("Failed to create GRN");
     }
   };
 
-  const resetForm = () => {
-    setForm({
-      productName: "",
-      supplier: "",
-      manufactureDate: new Date().toISOString().split("T")[0],
-      qty: "",
-      costPrice: "",
-      paidAmount: "",
-    });
+  const openGrn = async (grnNumber) => {
+    try {
+      const res = await api.get(`/procurement/grn/${grnNumber}`);
+
+      setSelectedGrn(res.data || []);
+
+      setSelectedGrnNumber(grnNumber);
+
+      setShowGrnModal(true);
+    } catch (err) {
+      console.error(err);
+
+      alert("Unable to load GRN");
+    }
+  };
+
+  const payGrn = async () => {
+    if (!payAmount || isNaN(payAmount) || Number(payAmount) <= 0) {
+      alert("Enter a valid amount");
+      return;
+    }
+    try {
+      // pay each procurement row in this GRN
+      for (const p of selectedGrn) {
+        await api.put(`/procurement/payment/${p.id}?amount=${payAmount}`);
+      }
+      alert("Payment recorded successfully");
+      setShowPayInput(false);
+      setPayAmount("");
+      await refreshAll();
+      // refresh modal data too
+      const res = await api.get(`/procurement/grn/${selectedGrnNumber}`);
+      setSelectedGrn(res.data || []);
+    } catch (err) {
+      console.error(err);
+      alert("Payment failed");
+    }
+  };
+
+  const deleteGrn = async (grnNumber) => {
+    const ok = window.confirm(`Delete ${grnNumber} ?`);
+
+    if (!ok) return;
+
+    try {
+      await api.delete(`/procurement/grn/${grnNumber}`);
+
+      await refreshAll(); // ✅ was loadGrnSummary() — doesn't exist
+
+      // also close the modal if it's open
+      if (showGrnModal && selectedGrnNumber === grnNumber) {
+        setShowGrnModal(false);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Delete failed");
+    }
   };
 
   const importExcel = async (e) => {
@@ -200,43 +282,8 @@ export default function Procurement() {
       alert("Import failed");
     }
   };
-
-  const updatePayment = async (id) => {
-    try {
-      const amt = prompt("Enter payment amount");
-
-      if (!amt) return;
-
-      await api.put(`/procurement/payment/${id}?amount=${amt}`);
-
-      alert("Payment Updated");
-
-      await refreshAll();
-    } catch (err) {
-      console.log(err);
-
-      alert("Payment update failed");
-    }
-  };
-
-  const deleteRow = async (id) => {
-    try {
-      if (!window.confirm("Delete this procurement entry?")) return;
-
-      await api.delete(`/procurement/${id}`);
-
-      alert("Deleted Successfully");
-
-      await refreshAll();
-    } catch (err) {
-      console.log(err);
-
-      alert("Delete failed");
-    }
-  };
-
   const filteredLogs = logs.filter((l) => {
-    const supplierName = String(l.supplier?.name || "").toLowerCase();
+    const supplierName = String(l.supplier || "").toLowerCase(); // ✅ remove ?.name
 
     const supplierOk =
       !filters.supplier ||
@@ -247,16 +294,57 @@ export default function Procurement() {
     return supplierOk && statusOk;
   });
 
-  const badgeColor = (status) => {
-    if (status === "PAID") return "#16a34a";
+  const isGrnPaid =
+    selectedGrn.length > 0 &&
+    selectedGrn.every((p) => p.paymentStatus === "PAID");
 
-    if (status === "PARTIAL") return "#d97706";
-
-    return "#dc2626";
-  };
+ 
   return (
     <>
       <style>{`
+
+      .grid5 {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+@media(max-width:1000px) {
+  .grid5 { grid-template-columns: 1fr 1fr; }
+}
+
+@media(max-width:800px) {
+  .grid5 { grid-template-columns: 1fr; }
+}
+
+      .modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 80vh;
+  overflow-y: auto;
+  color: var(--text);
+}
+
+.modal-content h3 {
+  margin: 0 0 18px;
+  font-size: 18px;
+  font-weight: 800;
+}
             .proc-page{
         padding:20px;
         background:var(--bg);
@@ -1059,6 +1147,10 @@ table thead th {
   letter-spacing: 1px !important;
   text-transform: uppercase !important;
 }
+  .modal-content table {
+  min-width: unset;
+  width: 100%;
+}
       `}</style>
 
       <div className="proc-page">
@@ -1139,29 +1231,21 @@ table thead th {
 
           <div className="proc-divider" />
 
-          <div className="grid3">
+          <div className="grid2">
             <div>
-              <label className="proc-label">📦 Product</label>
-              <select
-                name="productName"
-                value={form.productName}
-                onChange={handleChange}
-              >
-                <option value="">Select Product</option>
-                {products.map((p) => (
-                  <option key={p.id}>{p.name}</option>
-                ))}
-              </select>
-            </div>
+              <label className="proc-label">Supplier</label>
 
-            <div>
-              <label className="proc-label">🏢 Supplier</label>
               <select
-                name="supplier"
                 value={form.supplier}
-                onChange={handleChange}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    supplier: e.target.value,
+                  })
+                }
               >
                 <option value="">Select Supplier</option>
+
                 {suppliers.map((s) => (
                   <option key={s.id}>{s.name}</option>
                 ))}
@@ -1169,70 +1253,99 @@ table thead th {
             </div>
 
             <div>
-              <label className="proc-label">📅 Manufacture Date</label>
+              <label className="proc-label">Invoice Ref</label>
 
               <input
-                type="date"
-                name="manufactureDate"
-                value={form.manufactureDate}
-                onChange={handleChange}
+                value={form.invoiceRef}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    invoiceRef: e.target.value,
+                  })
+                }
+                placeholder="Supplier Invoice"
               />
             </div>
           </div>
+          <div
+            style={{
+              marginTop: 20,
+            }}
+          >
+            {items.map((item, index) => (
+              <div key={index} className="grid5" style={{ marginBottom: 12 }}>
+                <select
+                  value={item.productId}
+                  onChange={(e) =>
+                    updateItem(index, "productId", e.target.value)
+                  }
+                >
+                  <option value="">Select Product</option>
+                  {products.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
 
-          <div className="grid4" style={{ marginTop: 16 }}>
-            <div>
-              <label className="proc-label">🔢 Qty</label>
-              <input
-                placeholder="0"
-                name="qty"
-                value={form.qty}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
-              <label className="proc-label">💰 Cost Price</label>
-              <div className="rupee-wrap">
-                <span className="rupee-prefix">₹</span>
                 <input
-                  className="has-rupee"
-                  placeholder="0.00"
-                  name="costPrice"
-                  value={form.costPrice}
-                  onChange={handleChange}
+                  placeholder="Qty"
+                  value={item.qty}
+                  onChange={(e) => updateItem(index, "qty", e.target.value)}
                 />
+
+                <input
+                  placeholder="Cost ₹"
+                  value={item.costPrice}
+                  onChange={(e) =>
+                    updateItem(index, "costPrice", e.target.value)
+                  }
+                />
+
+                <input
+                  type="date"
+                  value={item.manufactureDate || ""}
+                  onChange={(e) =>
+                    updateItem(index, "manufactureDate", e.target.value)
+                  }
+                />
+
+                <button
+                  style={{
+                    border: "none",
+                    background: "#dc2626",
+                    color: "#fff",
+                    borderRadius: "10px",
+                    height: "40px",
+                    padding: "0 14px",
+                    fontWeight: 700,
+                    fontSize: "12px",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                  }}
+                  onClick={() => removeItem(index)}
+                >
+                  ✕ Remove
+                </button>
               </div>
-            </div>
+            ))}
 
-            <div>
-              <label className="proc-label">📋 PO Number</label>
-              <input
-                value="Auto Generated"
-                readOnly
-                className="readonly-field"
-              />
-            </div>
-          </div>
+            <div
+              style={{
+                display: "flex",
+                gap: "12px",
+                marginTop: "16px",
+                alignItems: "center",
+              }}
+            >
+              <button className="btn blue" onClick={addItem}>
+                + Add Item
+              </button>
 
-          <div className="grid2" style={{ marginTop: 16 }}>
-            <div>
-              <label className="proc-label">🧾 Invoice Ref</label>
-              <input
-                value="Auto Generated"
-                readOnly
-                className="readonly-field"
-              />
+              <button className="save-proc-btn" onClick={createGrn}>
+                📦 Create GRN
+              </button>
             </div>
-          </div>
-
-          <div className="proc-form-footer">
-            <span className="form-note">
-              * PO Number and Invoice Ref are auto-generated on save
-            </span>
-            <button className="save-proc-btn" onClick={createProcurement}>
-              <span>+</span> Save Procurement
-            </button>
           </div>
         </div>
 
@@ -1267,9 +1380,6 @@ table thead th {
               }
             >
               <option value="">All Status</option>
-              <option value="PAID">PAID</option>
-              <option value="PARTIAL">PARTIAL</option>
-              <option value="UNPAID">UNPAID</option>
             </select>
           </div>
         </div>
@@ -1282,17 +1392,12 @@ table thead th {
             <table>
               <thead>
                 <tr>
-                  <th>PO Number</th>
-                  <th>Invoice Ref</th>
-                  <th>Product</th>
+                  <th>GRN Number</th>
                   <th>Supplier</th>
-                  <th>Qty</th>
-                  <th>Total</th>
-                  <th>Paid</th>
-                  <th>MFD</th>
-                  <th>Expiry</th>
-                  <th>Due</th>
-                  <th>Status</th>
+                  <th>Invoice Ref</th>
+                  <th>Items</th>
+                  <th>Total Qty</th>
+                  <th>Total Amount</th>
                   <th>Date</th>
                   <th>Action</th>
                 </tr>
@@ -1302,7 +1407,7 @@ table thead th {
                 {filteredLogs.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="11"
+                      colSpan="8"
                       style={{
                         textAlign: "center",
                         padding: "40px",
@@ -1314,91 +1419,45 @@ table thead th {
                   </tr>
                 ) : (
                   filteredLogs.map((l) => (
-                    <tr key={l.id}>
+                    <tr key={l.grnNumber}>
                       <td>
-                        <span className="po-chip">{l.poNumber}</span>
+                        <span className="po-chip">{l.grnNumber}</span>
                       </td>
+
+                      <td>
+                        <span className="supplier-chip">🏢 {l.supplier}</span>
+                      </td>
+
                       <td>
                         <span className="inv-ref-chip">{l.invoiceRef}</span>
                       </td>
 
                       <td>
-                        <div className="proc-product-cell">
-                          <div
-                            className="proc-avatar"
-                            style={{
-                              background: `hsl(${((l.product?.name || "P").charCodeAt(0) * 47) % 360}, 58%, 44%)`,
-                            }}
-                          >
-                            {(l.product?.name || "P")[0].toUpperCase()}
-                          </div>
-                          <span className="proc-product-name">
-                            {l.product?.name}
-                          </span>
-                        </div>
+                        <strong>{l.items}</strong>
                       </td>
 
                       <td>
-                        <span className="supplier-chip">
-                          🏢 {l.supplier?.name}
-                        </span>
+                        <strong>{l.totalQty}</strong>
                       </td>
 
                       <td>
-                        <strong>{l.qty}</strong>
-                      </td>
-                      <td>
-                        <strong>₹{l.totalCost}</strong>
-                      </td>
-                      <td style={{ color: "#16a34a", fontWeight: 700 }}>
-                        ₹{l.paidAmount || 0}
+                        <strong>₹{Number(l.amount).toFixed(2)}</strong>
                       </td>
 
-                      <td>{l.manufactureDate || "-"}</td>
-
-                      <td>
-                        <strong style={{ color: "#dc2626" }}>
-                          {l.expiryDate || "-"}
-                        </strong>
-                      </td>
-
-                      <td
-                        style={{
-                          color: l.dueAmount > 0 ? "#dc2626" : "#94a3b8",
-                          fontWeight: 800,
-                        }}
-                      >
-                        {l.dueAmount > 0 ? `₹${l.dueAmount}` : "—"}
-                      </td>
-
-                      <td>
-                        <span
-                          className="badge"
-                          style={{ background: badgeColor(l.paymentStatus) }}
-                        >
-                          {l.paymentStatus}
-                        </span>
-                      </td>
-
-                      <td>
-                        <div className="date-cell">
-                          <span className="date-main">{l.date}</span>
-                        </div>
-                      </td>
+                      <td>{l.date}</td>
 
                       <td>
                         <div className="action-row">
-                          {l.dueAmount > 0 && (
-                            <button
-                              className="action-btn pay-btn"
-                              onClick={() => updatePayment(l.id)}
-                            >
-                              💳 Pay
-                            </button>
-                          )}
+                          <button
+                            className="action-btn pay-btn"
+                            onClick={() => openGrn(l.grnNumber)}
+                          >
+                            👁 View
+                          </button>
+
                           <button
                             className="action-btn delete-btn"
-                            onClick={() => deleteRow(l.id)}
+                            onClick={() => deleteGrn(l.grnNumber)}
                           >
                             🗑 Delete
                           </button>
@@ -1411,6 +1470,127 @@ table thead th {
             </table>
           </div>
         </div>
+        {showGrnModal && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h3>{selectedGrnNumber}</h3>
+
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Qty</th>
+                    <th>Cost</th>
+                    <th>MFD</th>
+                    <th>Expiry</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {selectedGrn.map((p) => (
+                    <tr key={p.id}>
+                      <td>{p.product?.name}</td>
+
+                      <td>{p.qty}</td>
+
+                      <td>₹{p.totalCost}</td>
+
+                      <td>{p.manufactureDate || "-"}</td>
+
+                      <td>{p.expiryDate || "-"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "12px",
+                  marginTop: "20px",
+                }}
+              >
+                {/* Payment input row */}
+                {showPayInput && (
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "10px",
+                      alignItems: "center",
+                    }}
+                  >
+                    <input
+                      type="number"
+                      placeholder="Enter amount (₹)"
+                      value={payAmount}
+                      onChange={(e) => setPayAmount(e.target.value)}
+                      style={{
+                        flex: 1,
+                        height: "42px",
+                        borderRadius: "10px",
+                        border: "1px solid var(--border)",
+                        padding: "0 14px",
+                        background: "var(--bg)",
+                        color: "var(--text)",
+                      }}
+                    />
+                    <button className="action-btn pay-btn" onClick={payGrn}>
+                      ✅ Confirm
+                    </button>
+                    <button
+                      className="action-btn delete-btn"
+                      onClick={() => {
+                        setShowPayInput(false);
+                        setPayAmount("");
+                      }}
+                    >
+                      ✖
+                    </button>
+                  </div>
+                )}
+
+                <div
+                  style={{ display: "flex", gap: "10px", alignItems: "center" }}
+                >
+                  {isGrnPaid ? (
+                    <span
+                      style={{
+                        background: "#dcfce7",
+                        color: "#15803d",
+                        padding: "6px 16px",
+                        borderRadius: "999px",
+                        fontWeight: 800,
+                        fontSize: "13px",
+                      }}
+                    >
+                      ✅ PAID
+                    </span>
+                  ) : (
+                    !showPayInput && (
+                      <button
+                        className="action-btn pay-btn"
+                        onClick={() => setShowPayInput(true)}
+                      >
+                        💰 Pay
+                      </button>
+                    )
+                  )}
+                  <button
+                    className="action-btn delete-btn"
+                    onClick={() => {
+                      setShowGrnModal(false);
+                      setShowPayInput(false);
+                      setPayAmount("");
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
