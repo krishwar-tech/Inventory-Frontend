@@ -27,6 +27,7 @@ export default function Products() {
     subCategoryId: "",
     mrp: "",
     price: "",
+    packSize: "",
     unit: "pcs",
   });
 
@@ -104,8 +105,10 @@ export default function Products() {
       name: "",
       barcode: "",
       categoryId: "",
+      subCategoryId: "",
       mrp: "",
       price: "",
+      packSize: "",
       unit: "pcs",
     });
   };
@@ -145,6 +148,8 @@ export default function Products() {
         price: form.price === "" ? null : Number(form.price),
 
         unit: form.unit || null,
+
+        packSize: form.packSize === "" ? 0 : Number(form.packSize),
       });
 
       resetForm();
@@ -251,6 +256,7 @@ export default function Products() {
           subCategoryId: "",
           mrp: "",
           price: "",
+          packSize: "",
           unit: "pcs",
         });
 
@@ -1280,6 +1286,11 @@ td.margin-low  { color: #ef4444; font-weight: 800; }
   background: rgba(239,68,68,0.12);
   color: #ef4444;
 }
+
+.required-star{
+  color:#ef4444;
+  margin-left:3px;
+}
       `}</style>
 
       <div className="content products-page">
@@ -1333,7 +1344,8 @@ td.margin-low  { color: #ef4444; font-weight: 800; }
           <div className="row-grid">
             <div className="col">
               <label className="field-label">
-                <span className="label-icon">🏷️</span> Product Name
+                <span className="label-icon">🏷️</span> Product Name{" "}
+                <span className="required-star">*</span>
               </label>
               <input
                 className="field-input"
@@ -1352,6 +1364,26 @@ td.margin-low  { color: #ef4444; font-weight: 800; }
                 placeholder="Scan or type barcode"
                 value={form.barcode}
                 onChange={(e) => setForm({ ...form, barcode: e.target.value })}
+              />
+            </div>
+
+            <div className="col">
+              <label className="field-label">
+                <span className="label-icon">📦</span>
+                Pack Size <span style={{ color: "red" }}>*</span>
+              </label>
+
+              <input
+                className="field-input"
+                type="number"
+                placeholder="Enter Pack Size"
+                value={form.packSize}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    packSize: e.target.value,
+                  })
+                }
               />
             </div>
 
@@ -1401,7 +1433,8 @@ td.margin-low  { color: #ef4444; font-weight: 800; }
           <div className="row-grid">
             <div className="col">
               <label className="field-label">
-                <span className="label-icon">💰</span> MRP
+                <span className="label-icon">💰</span> MRP{" "}
+                <span className="required-star">*</span>
               </label>
               <div className="input-prefix-wrap">
                 <span className="input-prefix">₹</span>
@@ -1416,7 +1449,8 @@ td.margin-low  { color: #ef4444; font-weight: 800; }
 
             <div className="col">
               <label className="field-label">
-                <span className="label-icon">🏷️</span> Selling Price
+                <span className="label-icon">🏷️</span> Selling Price{" "}
+                <span className="required-star">*</span>
               </label>
               <div className="input-prefix-wrap">
                 <span className="input-prefix">₹</span>
@@ -1431,7 +1465,8 @@ td.margin-low  { color: #ef4444; font-weight: 800; }
 
             <div className="col">
               <label className="field-label">
-                <span className="label-icon">📐</span> Unit
+                <span className="label-icon">📐</span> Unit{" "}
+                <span className="required-star">*</span>
               </label>
               <select
                 className="field-input"
@@ -1492,6 +1527,7 @@ td.margin-low  { color: #ef4444; font-weight: 800; }
                   <th>PRICE</th>
                   <th>MARGIN</th>
                   <th>UNIT</th>
+                  <th>PACK SIZE</th>
                   <th>STOCK</th>
                   <th>STATUS</th>
                   <th>ACTION</th>
@@ -1525,6 +1561,7 @@ td.margin-low  { color: #ef4444; font-weight: 800; }
                     <td>₹{p.price}</td>
                     <td>{margin(p)}</td>
                     <td>{p.unit}</td>
+                    <td>{p.packSize}</td>
                     <td className={(p.stock || 0) < 15 ? "low-stock" : ""}>
                       {p.stock || 0}
                     </td>
