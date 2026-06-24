@@ -6,6 +6,11 @@ import { Html5QrcodeScanner } from "html5-qrcode";
 export default function Billing() {
   const [barcode, setBarcode] = useState("");
   const [cart, setCart] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const suggestionsRef = useRef([]);
+  const inputRef = useRef(null);
   const [scannerOpen, setScannerOpen] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -25,10 +30,64 @@ export default function Billing() {
 
   const handleEnter = (e) => {
     if (e.key === "Enter") {
+      if (suggestionsRef.current.length > 0) {
+        selectSuggestion(suggestionsRef.current[0]);
+        return;
+      }
+      setShowSuggestions(false);
+      setSuggestions([]);
       fetchProduct(barcode);
-
       setBarcode("");
     }
+    if (e.key === "Escape") {
+      suggestionsRef.current = [];
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleBarcodeChange = async (e) => {
+    const val = e.target.value;
+    setBarcode(val);
+
+    // If purely numeric (barcode scan), don't show suggestions
+    if (!val.trim() || /^\d+$/.test(val.trim())) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    // Name search — has at least one letter
+    if (val.trim().length >= 2) {
+      setSearchLoading(true);
+      try {
+        const res = await api.get(
+          `/products/search?q=${encodeURIComponent(val.trim())}`,
+        );
+        const list = Array.isArray(res.data) ? res.data : res.data?.data || [];
+        const active = list.filter((p) => p.status === "ACTIVE");
+        setSuggestions(active);
+        suggestionsRef.current = active; // ← add this
+        setShowSuggestions(active.length > 0);
+        setShowSuggestions(active.length > 0);
+      } catch {
+        setSuggestions([]);
+        suggestionsRef.current = [];
+        setShowSuggestions(false);
+      } finally {
+        setSearchLoading(false);
+      }
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+  const selectSuggestion = (product) => {
+    addToCart(product);
+    setBarcode("");
+    setSuggestions([]);
+    setShowSuggestions(false);
+    if (navigator.vibrate) navigator.vibrate(200);
   };
 
   const fetchProduct = async (code) => {
@@ -135,7 +194,7 @@ export default function Billing() {
 
     setCardPaid(0);
 
-   setPaymentMode("CASH");
+    setPaymentMode("CASH");
   };
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
@@ -180,8 +239,6 @@ export default function Billing() {
           price: x.price,
         })),
       });
-
-      console.log(res);
 
       alert("Billing completed successfully");
 
@@ -698,38 +755,123 @@ export default function Billing() {
           <div className="billing-title">Billing</div>
 
           <div className="billing-sub">
-            Barcode-only lookup — scan products instantly
+            Scan barcode or search by product name
           </div>
 
-          <div className="scan-box">
-            <div className="scan-icon">▌▌▌</div>
+          <div style={{ position: "relative", marginBottom: "18px" }}>
+            <div className="scan-box" style={{ marginBottom: 0 }}>
+              <div className="scan-icon">▌▌▌</div>
 
-            <input
-              className="scan-input"
-              placeholder="Scan barcode then press Enter..."
-              value={barcode}
-              onChange={(e) => setBarcode(e.target.value)}
-              onKeyDown={handleEnter}
-            />
+              <input
+                ref={inputRef}
+                className="scan-input"
+                placeholder="Scan barcode or type product name..."
+                value={barcode}
+                onChange={handleBarcodeChange}
+                onKeyDown={handleEnter}
+                autoComplete="off"
+              />
 
-            <button className="scan-btn" onClick={() => setScannerOpen(true)}>
-              📷 Camera
-            </button>
+              <button className="scan-btn" onClick={() => setScannerOpen(true)}>
+                📷 Camera
+              </button>
 
-            <button
-              className="scan-btn"
-              onClick={() => fileInputRef.current.click()}
-            >
-              🖼 Upload
-            </button>
+              <button
+                className="scan-btn"
+                onClick={() => fileInputRef.current.click()}
+              >
+                🖼 Upload
+              </button>
 
-            <input
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              style={{ display: "none" }}
-              onChange={handleImageUpload}
-            />
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                onChange={handleImageUpload}
+              />
+            </div>
+
+            {/* NAME SEARCH DROPDOWN */}
+            {showSuggestions && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "100%",
+                  left: 0,
+                  right: 0,
+                  background: "var(--surface)",
+                  border: "1px solid #16a34a",
+                  borderRadius: "14px",
+                  marginTop: "6px",
+                  zIndex: 1000,
+                  maxHeight: "260px",
+                  overflowY: "auto",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
+                }}
+              >
+                {searchLoading ? (
+                  <div
+                    style={{
+                      padding: "14px 18px",
+                      color: "var(--muted)",
+                      fontSize: "13px",
+                    }}
+                  >
+                    Searching...
+                  </div>
+                ) : (
+                  suggestions.map((p) => (
+                    <div
+                      key={p.id}
+                      onClick={() => selectSuggestion(p)}
+                      style={{
+                        padding: "12px 18px",
+                        cursor: "pointer",
+                        borderBottom: "1px solid var(--border)",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        transition: "background 0.15s",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.background = "var(--bg)")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.background = "transparent")
+                      }
+                    >
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: "14px" }}>
+                          {p.name}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "12px",
+                            color: "var(--muted)",
+                            marginTop: "2px",
+                          }}
+                        >
+                          {p.barcode !== "N/A"
+                            ? `Barcode: ${p.barcode}`
+                            : "No barcode"}{" "}
+                          · SKU: {p.sku}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          fontWeight: 800,
+                          color: "#16a34a",
+                          fontSize: "15px",
+                        }}
+                      >
+                        ₹{p.price}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
 
           {/* CART */}
@@ -853,7 +995,7 @@ export default function Billing() {
               </select>
             </div>
 
-           {(paymentMode === "CASH" || paymentMode === "MIXED") && (
+            {(paymentMode === "CASH" || paymentMode === "MIXED") && (
               <div className="row">
                 <span>Cash</span>
 
@@ -864,7 +1006,7 @@ export default function Billing() {
                 />
               </div>
             )}
-              {(paymentMode === "UPI" || paymentMode === "MIXED") && (
+            {(paymentMode === "UPI" || paymentMode === "MIXED") && (
               <div className="row">
                 <span>UPI</span>
 
@@ -875,7 +1017,7 @@ export default function Billing() {
                 />
               </div>
             )}
-              {(paymentMode === "CARD" || paymentMode === "MIXED") && (
+            {(paymentMode === "CARD" || paymentMode === "MIXED") && (
               <div className="row">
                 <span>Card</span>
 
